@@ -32,6 +32,14 @@ pub enum Error {
     ParseBoolError(#[from] std::str::ParseBoolError),
     #[error("Can't make Property {0:?} from value {1:?}")]
     PropertyConvertError(PropertyKind, Value),
+    #[error("Can't make Property {0:?} from constant {1:?}")]
+    ConstantPropertyError(PropertyKind, Constant),
+}
+
+impl From<std::io::Error> for Error {
+    fn from(e: std::io::Error) -> Self {
+        Self::Xml(e.into())
+    }
 }
 
 /// https://www.freedesktop.org/software/fontconfig/fontconfig-user.html
@@ -54,6 +62,11 @@ impl DocumentReader {
         Self {
             buf: Vec::with_capacity(128),
         }
+    }
+
+    /// Clear internal buffer
+    pub fn clear(&mut self) {
+        self.buf.clear();
     }
 
     fn read_string<B: BufRead>(&mut self, tag: &[u8], reader: &mut Reader<B>) -> Result<String> {
@@ -94,6 +107,11 @@ impl DocumentReader {
                     b"bool" => {
                         break Ok(Value::Bool(
                             reader.read_text(b"bool", &mut self.buf)?.parse()?,
+                        ));
+                    }
+                    b"const" => {
+                        break Ok(Value::Const(
+                            reader.read_text(b"const", &mut self.buf)?.parse()?,
                         ));
                     }
                     _ => todo!("{:?}", s),
@@ -196,7 +214,7 @@ impl DocumentReader {
     }
 
     pub fn read_document<B: BufRead>(&mut self, reader: &mut Reader<B>) -> Result<Document> {
-        self.buf.clear();
+        self.clear();
 
         // STAGE 1. validate document
 

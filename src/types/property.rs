@@ -8,7 +8,7 @@ macro_rules! define_property {
             $variant:ident($value_ty:ident),
         )+
     ) => {
-        #[derive(Clone, Debug)]
+        #[derive(Clone, Debug, PartialEq)]
         pub enum Property {
             $(
                 $(#[$attr])*
@@ -26,7 +26,7 @@ macro_rules! define_property {
             }
         }
 
-        #[derive(Clone, Copy, Debug, EnumString)]
+        #[derive(Copy, Clone, Debug, Eq, PartialEq, EnumString)]
         #[strum(serialize_all = "lowercase")]
         pub enum PropertyKind {
             $(
@@ -38,6 +38,7 @@ macro_rules! define_property {
         impl PropertyKind {
             pub fn make_property(self, value: Value) -> crate::Result<Property> {
                 match (self, value) {
+                    (kind, Value::Const(constant)) => constant.to_property(kind),
                     $(
                         (PropertyKind::$variant, Value::$value_ty(value)) => Ok(Property::$variant(value)),
                     )+
