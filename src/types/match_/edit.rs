@@ -1,19 +1,15 @@
-use crate::{PropertyKind, Value};
-use serde::{Deserialize, Serialize};
+use crate::Property;
+use strum_macros::EnumString;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default)]
 pub struct Edit {
-    pub name: PropertyKind,
-    #[serde(default)]
     pub mode: EditMode,
-    #[serde(default)]
     pub binding: EditBinding,
-    #[serde(rename = "$value")]
-    pub value: Value,
+    pub value: Property,
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Copy, Clone, Debug, EnumString)]
+#[strum(serialize_all = "snake_case")]
 pub enum EditBinding {
     Strong,
     Weak,
@@ -26,8 +22,8 @@ impl Default for EditBinding {
     }
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Copy, Clone, Debug, EnumString)]
+#[strum(serialize_all = "snake_case")]
 pub enum EditMode {
     Assign,
     AssignReplace,

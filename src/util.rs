@@ -1,17 +1,20 @@
-pub mod serde_yesno {
-    use serde::{de::Error, Deserialize, Deserializer, Serializer};
+use std::io::BufRead;
 
-    pub fn serialize<S: Serializer>(v: &bool, s: S) -> Result<S::Ok, S::Error> {
-        s.serialize_str(if *v { "yes" } else { "no" })
-    }
+use quick_xml::{events::attributes::Attribute, Reader};
 
-    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<bool, D::Error> {
-        let s = String::deserialize(d)?;
+use crate::Result;
 
-        match s.as_str() {
-            "yes" => Ok(true),
-            "no" => Ok(false),
-            other => Err(Error::unknown_variant(other, &["yes", "no"])),
-        }
+pub trait AttributeExt {
+    fn parse<T: std::str::FromStr, B: BufRead>(&self, reader: &Reader<B>) -> Result<T>
+    where
+        crate::Error: From<T::Err>;
+}
+
+impl<'a> AttributeExt for Attribute<'a> {
+    fn parse<T: std::str::FromStr, B: BufRead>(&self, reader: &Reader<B>) -> Result<T>
+    where
+        crate::Error: From<T::Err>,
+    {
+        Ok(self.unescape_and_decode_without_bom(reader)?.parse()?)
     }
 }

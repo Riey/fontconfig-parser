@@ -1,35 +1,27 @@
-use serde::{Deserialize, Serialize};
+use strum_macros::EnumString;
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default)]
 pub struct Dir {
-    #[serde(default)]
     pub prefix: DirPrefix,
     pub salt: Option<String>,
-    #[serde(rename = "$value")]
     pub path: String,
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default)]
 pub struct CacheDir {
-    #[serde(default)]
     pub prefix: DirPrefix,
-    #[serde(rename = "$value")]
     pub path: String,
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default)]
 pub struct Include {
-    #[serde(default)]
     pub prefix: DirPrefix,
-    #[serde(with = "crate::util::serde_yesno")]
-    #[serde(default)]
     pub ignore_missing: bool,
-    #[serde(rename = "$value")]
     pub path: String,
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Clone, Copy, Debug, EnumString)]
+#[strum(serialize_all = "lowercase")]
 pub enum DirPrefix {
     Default,
     Cwd,

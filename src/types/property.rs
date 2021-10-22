@@ -1,14 +1,54 @@
-use crate::{Bool, CharSet, Double, Int};
-use enum_kinds::EnumKind;
-use serde::{Deserialize, Serialize};
+use crate::{Bool, CharSet, Double, Int, Value};
+use strum_macros::EnumString;
 
-#[derive(Clone, Debug, EnumKind)]
-#[enum_kind(
-    PropertyKind,
-    derive(Serialize, Deserialize),
-    serde(rename_all = "lowercase")
-)]
-pub enum Property {
+macro_rules! define_property {
+    (
+        $(
+            $(#[$attr:meta])*
+            $variant:ident($value_ty:ident),
+        )+
+    ) => {
+        #[derive(Clone, Debug)]
+        pub enum Property {
+            $(
+                $(#[$attr])*
+                $variant($value_ty),
+            )+
+        }
+
+        impl Property {
+            pub const fn kind(&self) -> PropertyKind {
+                match self {
+                    $(
+                        Property::$variant(_) => PropertyKind::$variant,
+                    )+
+                }
+            }
+        }
+
+        #[derive(Clone, Copy, Debug, EnumString)]
+        #[strum(serialize_all = "lowercase")]
+        pub enum PropertyKind {
+            $(
+                $(#[$attr])*
+                $variant,
+            )+
+        }
+
+        impl PropertyKind {
+            pub fn make_property(self, value: Value) -> crate::Result<Property> {
+                match (self, value) {
+                    $(
+                        (PropertyKind::$variant, Value::$value_ty(value)) => Ok(Property::$variant(value)),
+                    )+
+                    (kind, value) => Err(crate::Error::PropertyConvertError(kind, value)),
+                }
+            }
+        }
+    };
+}
+
+define_property! {
     /// Font family names
     Family(String),
     /// Languages corresponding to each family
@@ -104,4 +144,16 @@ pub enum Property {
     Fonthashint(Bool),
     /// Order number of the font
     Order(Int),
+}
+
+impl Default for Property {
+    fn default() -> Self {
+        Property::Family("DejavuSans".into())
+    }
+}
+
+impl Default for PropertyKind {
+    fn default() -> Self {
+        PropertyKind::Family
+    }
 }

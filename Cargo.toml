@@ -6,9 +6,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-enum-kinds = "0.5.1"
-serde = { version = "1.0.130", features = ["derive"] }
+quick-xml = { version = "0.22.0", default-features = false }
+strum = "0.22.0"
+strum_macros = "0.22.0"
 thiserror = "1.0.30"
-
-[dev-dependencies]
-quick-xml = { version = "0.22.0", default-features = false, features = ["serialize"] }

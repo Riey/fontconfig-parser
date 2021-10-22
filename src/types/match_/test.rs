@@ -1,5 +1,5 @@
-use crate::PropertyKind;
-use serde::{Deserialize, Serialize};
+use crate::Property;
+use strum_macros::EnumString;
 
 /// This element contains a single value which is compared with the target ('pattern', 'font', 'scan' or 'default') property "property" (substitute any of the property names seen above).
 /// 'compare' can be one of "eq", "not_eq", "less", "less_eq", "more", "more_eq", "contains" or "not_contains".
@@ -8,21 +8,16 @@ use serde::{Deserialize, Serialize};
 /// if 'ignore-blanks' is set "true", any blanks in the string will be ignored on its comparison. this takes effects only when compare="eq" or compare="not_eq".
 /// When used in a <match target="font"> element, the target= attribute in the <test> element selects between matching the original pattern or the font.
 /// "default" selects whichever target the outer <match> element has selected.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default)]
 pub struct Test {
-    pub name: PropertyKind,
-    #[serde(default)]
     pub qual: TestQual,
-    #[serde(default)]
     pub target: TestTarget,
-    #[serde(default)]
     pub compare: TestCompare,
-    #[serde(rename = "string")]
-    pub value: String,
+    pub value: Property,
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Clone, Copy, Debug, EnumString)]
+#[strum(serialize_all = "snake_case")]
 pub enum TestTarget {
     Default,
     Pattern,
@@ -36,8 +31,8 @@ impl Default for TestTarget {
     }
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Clone, Copy, Debug, EnumString)]
+#[strum(serialize_all = "snake_case")]
 pub enum TestCompare {
     Eq,
     NotEq,
@@ -55,8 +50,8 @@ impl Default for TestCompare {
     }
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Clone, Copy, Debug, EnumString)]
+#[strum(serialize_all = "snake_case")]
 pub enum TestQual {
     Any,
     All,

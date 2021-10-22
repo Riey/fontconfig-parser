@@ -3,20 +3,15 @@ mod test;
 
 pub use self::edit::*;
 pub use self::test::*;
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default)]
 pub struct Match {
-    #[serde(default)]
-    target: MatchTarget,
-    #[serde(rename = "test")]
-    tests: Vec<Test>,
-    #[serde(rename = "edit")]
-    edits: Vec<Edit>,
+    pub target: MatchTarget,
+    pub tests: Vec<Test>,
+    pub edits: Vec<Edit>,
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Clone, Copy, Debug)]
 pub enum MatchTarget {
     Pattern,
     Font,

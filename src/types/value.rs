@@ -1,24 +1,20 @@
-use serde::{Deserialize, Serialize};
-
 pub type Bool = bool;
 pub type Int = u32;
 pub type Double = f64;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct CharSet {
-    #[serde(rename = "int")]
     pub ints: Vec<Int>,
 }
 
 /// Runtime typed fontconfig value
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(untagged)]
+#[derive(Clone, Debug)]
 pub enum Value {
-    Int { int: Int },
-    Double { double: Double },
-    String { string: String },
-    Bool { bool: Bool },
+    Int(Int),
+    Double(Double),
+    String(String),
+    Bool(Bool),
     // Matrix
     // Range,
-    CharSet { charset: CharSet },
+    CharSet(CharSet),
 }
