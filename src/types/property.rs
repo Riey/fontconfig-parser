@@ -1,4 +1,4 @@
-use crate::{Bool, CharSet, Double, Int, Value};
+use crate::{Expression, Value};
 use strum_macros::EnumString;
 
 macro_rules! define_property {
@@ -12,7 +12,7 @@ macro_rules! define_property {
         pub enum Property {
             $(
                 $(#[$attr])*
-                $variant($value_ty),
+                $variant(Expression),
             )+
         }
 
@@ -36,13 +36,11 @@ macro_rules! define_property {
         }
 
         impl PropertyKind {
-            pub fn make_property(self, value: Value) -> crate::Result<Property> {
-                match (self, value) {
-                    (kind, Value::Const(constant)) => constant.to_property(kind),
+            pub fn make_property(self, expr: Expression) -> Property {
+                match self {
                     $(
-                        (PropertyKind::$variant, Value::$value_ty(value)) => Ok(Property::$variant(value)),
+                        PropertyKind::$variant => Property::$variant(expr),
                     )+
-                    (kind, value) => Err(crate::Error::PropertyConvertError(kind, value)),
                 }
             }
         }
@@ -145,11 +143,17 @@ define_property! {
     Fonthashint(Bool),
     /// Order number of the font
     Order(Int),
+
+    // custom
+
+    Matrix(Matrix),
+    PixelSizeFixupFactor(Double),
+    ScalingNotNeeded(Bool),
 }
 
 impl Default for Property {
     fn default() -> Self {
-        Property::Family("DejavuSans".into())
+        Property::Family(Expression::Simple(Value::String(String::new())))
     }
 }
 

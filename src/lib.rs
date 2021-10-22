@@ -30,10 +30,6 @@ pub enum Error {
     ParseFloatError(#[from] std::num::ParseFloatError),
     #[error("Parse bool error: {0}")]
     ParseBoolError(#[from] std::str::ParseBoolError),
-    #[error("Can't make Property {0:?} from value {1:?}")]
-    PropertyConvertError(PropertyKind, Value),
-    #[error("Can't make Property {0:?} from constant {1:?}")]
-    ConstantPropertyError(PropertyKind, Constant),
 }
 
 impl From<std::io::Error> for Error {
@@ -87,45 +83,91 @@ impl DocumentReader {
         }
     }
 
-    fn read_value<B: BufRead>(&mut self, reader: &mut Reader<B>) -> Result<Value> {
+    fn read_value<B: BufRead>(&mut self, reader: &mut Reader<B>) -> Result<Expression> {
         loop {
             match reader.read_event(&mut self.buf)? {
+                Event::End(_) => break Err(Error::InvalidFormat),
                 Event::Start(s) => match s.name() {
                     b"string" => {
-                        break Ok(Value::String(reader.read_text(b"string", &mut self.buf)?));
+                        break Ok(Value::String(reader.read_text(b"string", &mut self.buf)?).into());
                     }
                     b"double" => {
                         break Ok(Value::Double(
                             reader.read_text(b"double", &mut self.buf)?.parse()?,
-                        ));
+                        )
+                        .into());
                     }
                     b"int" => {
-                        break Ok(Value::Int(
-                            reader.read_text(b"int", &mut self.buf)?.parse()?,
-                        ));
+                        break Ok(
+                            Value::Int(reader.read_text(b"int", &mut self.buf)?.parse()?).into(),
+                        );
                     }
                     b"bool" => {
-                        break Ok(Value::Bool(
-                            reader.read_text(b"bool", &mut self.buf)?.parse()?,
-                        ));
+                        break Ok(
+                            Value::Bool(reader.read_text(b"bool", &mut self.buf)?.parse()?).into(),
+                        );
                     }
                     b"const" => {
                         break Ok(Value::Const(
                             reader.read_text(b"const", &mut self.buf)?.parse()?,
-                        ));
+                        )
+                        .into());
                     }
                     b"matrix" => {
-                        break Ok(Value::Matrix([
+                        let ret = Ok(Value::Matrix([
                             self.read_string(b"double", reader)?.parse()?,
                             self.read_string(b"double", reader)?.parse()?,
                             self.read_string(b"double", reader)?.parse()?,
                             self.read_string(b"double", reader)?.parse()?,
-                        ]));
+                        ])
+                        .into());
+
+                        reader.read_to_end(b"matrix", &mut self.buf)?;
+
+                        break ret;
                     }
-                    _ => todo!("{:?}", s),
+                    b"name" => {
+                        break Ok(Value::Property(
+                            reader.read_text(b"name", &mut self.buf)?.parse()?,
+                        )
+                        .into());
+                    }
+                    name => {
+                        let name = std::str::from_utf8(name)
+                            .map_err(quick_xml::Error::from)?
+                            .to_string();
+
+                        break if let Ok(list_op) = name.parse() {
+                            let mut list = Vec::new();
+                            while let Ok(value) = self.read_value(reader) {
+                                list.push(value);
+                            }
+                            Ok(Expression::List(list, list_op))
+                        } else if let Ok(unary_op) = name.parse() {
+                            Ok(Expression::Unary(
+                                Box::new(self.read_value(reader)?),
+                                unary_op,
+                            ))
+                        } else if let Ok(binary_op) = name.parse() {
+                            break Ok(Expression::Binary(
+                                Box::new(self.read_value(reader)?),
+                                Box::new(self.read_value(reader)?),
+                                binary_op,
+                            ));
+                        } else if let Ok(ternary_op) = name.parse() {
+                            break Ok(Expression::Ternary(
+                                Box::new(self.read_value(reader)?),
+                                Box::new(self.read_value(reader)?),
+                                Box::new(self.read_value(reader)?),
+                                ternary_op,
+                            ));
+                        } else {
+                            todo!("{:?}", name)
+                        };
+                    }
                 },
                 Event::Eof => {
-                    break Err(quick_xml::Error::UnexpectedEof("Expect property".into()).into())
+                    break Err(quick_xml::Error::UnexpectedEof("Expect property".into()).into());
                 }
                 _ => {}
             }
@@ -154,7 +196,7 @@ impl DocumentReader {
                             }
                         }
 
-                        test.value = name.make_property(self.read_value(reader)?)?;
+                        test.value = name.make_property(self.read_value(reader)?);
                         reader.read_to_end(b"test", &mut self.buf)?;
 
                         ret.tests.push(test);
@@ -167,14 +209,19 @@ impl DocumentReader {
                             let attr = attr?;
 
                             match attr.key {
-                                b"name" => name = attr.parse(reader)?,
+                                b"name" => {
+                                    name = attr.parse(reader).map_err(|e| {
+                                        eprintln!("{:?}", attr);
+                                        e
+                                    })?
+                                }
                                 b"mode" => edit.mode = attr.parse(reader)?,
                                 b"binding" => edit.binding = attr.parse(reader)?,
                                 _ => {}
                             }
                         }
 
-                        edit.value = name.make_property(self.read_value(reader)?)?;
+                        edit.value = name.make_property(self.read_value(reader)?);
                         reader.read_to_end(b"edit", &mut self.buf)?;
 
                         ret.edits.push(edit);
@@ -229,11 +276,11 @@ impl DocumentReader {
         loop {
             match reader.read_event(&mut self.buf)? {
                 Event::Decl(_) | Event::Text(_) | Event::Comment(_) => continue,
-                Event::DocType(doc_type) => {
-                    if doc_type.as_ref() != b" fontconfig SYSTEM \"urn:fontconfig:fonts.dtd\"" {
-                        return Err(Error::UnmatchedDocType);
-                    }
-                }
+                Event::DocType(doc_type) => match doc_type.as_ref() {
+                    b" fontconfig SYSTEM \"urn:fontconfig:fonts.dtd\""
+                    | b" fontconfig SYSTEM 'urn:fontconfig:fonts.dtd'" => {}
+                    _ => return Err(Error::UnmatchedDocType),
+                },
                 Event::Start(s) => {
                     if s.name() == b"fontconfig" {
                         break;
@@ -250,6 +297,10 @@ impl DocumentReader {
         loop {
             match reader.read_event(&mut self.buf)? {
                 Event::Start(s) => match s.name() {
+                    b"alias" => {
+                        // TODO
+                        reader.read_to_end(b"alias", &mut self.buf)?;
+                    }
                     b"description" => {
                         ret.description = reader.read_text(b"description", &mut self.buf)?;
                     }

@@ -1,4 +1,4 @@
-use crate::{Property, PropertyKind};
+use crate::PropertyKind;
 use strum_macros::EnumString;
 
 macro_rules! define_constant {
@@ -16,14 +16,14 @@ macro_rules! define_constant {
         }
 
         impl Constant {
-            pub fn to_property(self, kind: PropertyKind) -> crate::Result<Property> {
+            pub fn get_value(self, kind: PropertyKind) -> Option<u32> {
                 match (self, kind) {
                     $(
                         $(
-                            (Constant::$variant, PropertyKind::$ty) => Ok(Property::$ty($value)),
+                            (Constant::$variant, PropertyKind::$ty) => Some($value),
                         )+
                     )+
-                    _ => Err(crate::Error::ConstantPropertyError(kind, self)),
+                    _ => None,
                 }
             }
         }
@@ -82,8 +82,5 @@ define_constant! {
 
 #[test]
 fn convert_test() {
-    assert_eq!(
-        Constant::Roman.to_property(PropertyKind::Slant).unwrap(),
-        Property::Slant(0)
-    );
+    assert_eq!(Constant::Roman.get_value(PropertyKind::Slant).unwrap(), 0,);
 }

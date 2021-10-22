@@ -43,7 +43,8 @@ macro_rules! define_calculate_path {
         impl $ty {
             pub fn calculate_path<P: AsRef<Path> + ?Sized>(&self, config_file_path: &P) -> PathBuf {
                 match self.prefix {
-                    DirPrefix::Default | DirPrefix::Cwd => Path::new(".").join(&self.path),
+                    DirPrefix::Default => self.path.as_str().into(),
+                    DirPrefix::Cwd => Path::new(".").join(&self.path),
                     DirPrefix::Relative => config_file_path.as_ref().join(&self.path),
                     DirPrefix::Xdg => {
                         PathBuf::from(env::var($xdg_env).unwrap_or_else(|_| $xdg_fallback.into()))

@@ -11,3 +11,6 @@ quick-xml = { version = "0.22.0", default-features = false }
 strum = "0.22.0"
 strum_macros = "0.22.0"
 thiserror = "1.0.30"
+
+[dev-dependencies]
+regex = "1.5.4"
