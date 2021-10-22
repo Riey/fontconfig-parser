@@ -114,6 +114,14 @@ impl DocumentReader {
                             reader.read_text(b"const", &mut self.buf)?.parse()?,
                         ));
                     }
+                    b"matrix" => {
+                        break Ok(Value::Matrix([
+                            self.read_string(b"double", reader)?.parse()?,
+                            self.read_string(b"double", reader)?.parse()?,
+                            self.read_string(b"double", reader)?.parse()?,
+                            self.read_string(b"double", reader)?.parse()?,
+                        ]));
+                    }
                     _ => todo!("{:?}", s),
                 },
                 Event::Eof => {

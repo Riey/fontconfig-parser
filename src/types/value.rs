@@ -17,7 +17,7 @@ pub enum Value {
     String(String),
     Const(Constant),
     Bool(Bool),
-    // Matrix
+    Matrix([Double; 4]),
     // Range,
     CharSet(CharSet),
 }
