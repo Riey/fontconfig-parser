@@ -1,4 +1,6 @@
 use crate::{Expression, Value};
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
 
 macro_rules! define_property {
     (
@@ -41,7 +43,7 @@ macro_rules! define_property {
             $(
                 ($variant, $name),
             )+
-            |s| Ok(PropertyKind::Dynamic(s.to_string())),
+            |s| Ok(PropertyKind::Dynamic(s.into())),
         }
 
         impl PropertyKind {

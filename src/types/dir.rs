@@ -1,6 +1,3 @@
-use std::env;
-use std::path::{Path, PathBuf};
-
 #[derive(Clone, Debug, Default)]
 pub struct Dir<'a> {
     pub prefix: DirPrefix,
@@ -46,16 +43,25 @@ impl Default for DirPrefix {
 macro_rules! define_calculate_path {
     ($ty:ident, $xdg_env:expr, $xdg_fallback:expr) => {
         impl<'a> $ty<'a> {
+            /// Environment variable name which used `xdg` prefix
+            pub const XDG_ENV: &'static str = $xdg_env;
+            /// Fallback path when `XDG_ENV` is not exists
+            pub const XDG_FALLBACK_PATH: &'static str = $xdg_fallback;
+
             /// Calculate actual path
-            pub fn calculate_path<P: AsRef<Path> + ?Sized>(&self, config_file_path: &P) -> PathBuf {
+            #[cfg(feature = "std")]
+            pub fn calculate_path<P: AsRef<std::path::Path> + ?Sized>(
+                &self,
+                config_file_path: &P,
+            ) -> std::path::PathBuf {
                 match self.prefix {
                     DirPrefix::Default => self.path.into(),
-                    DirPrefix::Cwd => Path::new(".").join(self.path),
+                    DirPrefix::Cwd => std::path::Path::new(".").join(self.path),
                     DirPrefix::Relative => config_file_path.as_ref().join(self.path),
-                    DirPrefix::Xdg => {
-                        PathBuf::from(env::var($xdg_env).unwrap_or_else(|_| $xdg_fallback.into()))
-                            .join(self.path)
-                    }
+                    DirPrefix::Xdg => std::path::PathBuf::from(
+                        std::env::var($xdg_env).unwrap_or_else(|_| $xdg_fallback.into()),
+                    )
+                    .join(self.path),
                 }
             }
         }

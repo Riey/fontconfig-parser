@@ -3,6 +3,8 @@ mod test;
 
 pub use self::edit::*;
 pub use self::test::*;
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
 
 #[derive(Clone, Debug, Default)]
 pub struct Match<'a> {

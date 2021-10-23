@@ -9,8 +9,12 @@ homepage = "https://github.com/Riey/fontconfig-parser"
 readme = "README.md"
 categories = ["fontconfig"]
 
+[features]
+default = ["std", "xmlparser/std"]
+std = []
+
 [dependencies]
-xmlparser = "0.13.3"
+xmlparser = { version = "0.13.3", default-features = false }
 
 [dev-dependencies]
 criterion = "0.3.5"

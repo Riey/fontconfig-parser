@@ -81,7 +81,7 @@ macro_rules! parse_enum {
         )+
         |$arg:ident| $fallback:expr,
     ) => {
-        impl std::str::FromStr for $ty {
+        impl core::str::FromStr for $ty {
             type Err = crate::Error;
 
             fn from_str($arg: &str) -> crate::Result<$ty> {
@@ -107,7 +107,7 @@ macro_rules! parse_enum {
             $(
                 ($variant, $text),
             )+
-            |s| Err(crate::Error::ParseEnumError(std::any::type_name::<$ty>(), s.to_string())),
+            |s| Err(crate::Error::ParseEnumError(core::any::type_name::<$ty>(), s.into())),
         }
     };
 }

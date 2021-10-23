@@ -1,6 +1,11 @@
 use crate::*;
 use xmlparser::{ElementEnd, ExternalId, Token};
 
+#[cfg(not(feature = "std"))]
+use alloc::boxed::Box;
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+
 pub fn parse_document<'a, 'b>(
     tokens: &mut impl Iterator<Item = Result<Token<'a>>>,
 ) -> Result<Document<'a>> {
@@ -76,7 +81,7 @@ return Err(Error::UnmatchedDocType);
                 "match" => {
                     doc.matches.push(parse_match(tokens)?);
                 }
-                other => eprintln!("Unknown element: {}", other),
+                _ => {}
             },
             _ => {}
         }

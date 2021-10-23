@@ -1,8 +1,9 @@
-use std::error;
-use std::fmt;
-use std::num::ParseFloatError;
-use std::num::ParseIntError;
-use std::str::ParseBoolError;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
+use core::fmt;
+use core::num::ParseFloatError;
+use core::num::ParseIntError;
+use core::str::ParseBoolError;
 
 #[derive(Debug)]
 pub enum Error {
@@ -11,6 +12,7 @@ pub enum Error {
     UnmatchedDocType,
     NoFontconfig,
     InvalidFormat,
+    #[cfg(feature = "std")]
     IoError(std::io::Error),
     ParseEnumError(&'static str, String),
     ParseIntError(ParseIntError),
@@ -18,6 +20,7 @@ pub enum Error {
     ParseBoolError(ParseBoolError),
 }
 
+#[cfg(feature = "std")]
 impl From<std::io::Error> for Error {
     fn from(e: std::io::Error) -> Self {
         Self::IoError(e)
@@ -56,6 +59,7 @@ impl fmt::Display for Error {
             Error::UnmatchedDocType => write!(f, "DOCTYPE is not fontconfig"),
             Error::NoFontconfig => write!(f, "Can't find fontconfig element"),
             Error::InvalidFormat => write!(f, "Config format is invalid"),
+            #[cfg(feature = "std")]
             Error::IoError(e) => write!(f, "IO error: {}", e),
             Error::ParseEnumError(ty, s) => write!(f, "Unknown variant for {}: {}", ty, s),
             Error::ParseIntError(e) => e.fmt(f),
@@ -65,4 +69,5 @@ impl fmt::Display for Error {
     }
 }
 
-impl error::Error for Error {}
+#[cfg(feature = "std")]
+impl std::error::Error for Error {}
