@@ -344,6 +344,6 @@ fn test_parse_match() {
     "#,
     )
     .into_iter()
-    .map(|r| dbg!(r).map_err(Into::into));
+    .map(|r| r.map_err(Into::into));
     parse_match(&mut tokens).unwrap();
 }

@@ -3,6 +3,11 @@ name = "fontconfig-parser"
 version = "0.1.0"
 edition = "2018"
 license = "MIT"
+description = "fontconfig file parser in pure Rust"
+repository = "https://github.com/Riey/fontconfig-parser"
+homepage = "https://github.com/Riey/fontconfig-parser"
+readme = "README.md"
+categories = ["fontconfig"]
 
 [dependencies]
 xmlparser = "0.13.3"
