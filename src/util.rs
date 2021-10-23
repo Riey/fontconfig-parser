@@ -18,3 +18,42 @@ impl<'a> AttributeExt for Attribute<'a> {
         Ok(self.unescape_and_decode_without_bom(reader)?.parse()?)
     }
 }
+
+macro_rules! parse_enum {
+    (
+        $ty:ty,
+        $(
+            ($variant:ident, $text:expr),
+        )+
+        |$arg:ident| $fallback:expr,
+    ) => {
+        impl std::str::FromStr for $ty {
+            type Err = crate::Error;
+
+            fn from_str($arg: &str) -> crate::Result<$ty> {
+                match $arg {
+                    $(
+                        $text => Ok(<$ty>::$variant),
+                    )+
+                    _ => {
+                        $fallback
+                    }
+                }
+            }
+        }
+    };
+    (
+        $ty:ty,
+        $(
+            ($variant:ident, $text:expr),
+        )+
+    ) => {
+        parse_enum! {
+            $ty,
+            $(
+                ($variant, $text),
+            )+
+            |s| Err(crate::Error::ParseEnumError(std::any::type_name::<$ty>(), s.to_string())),
+        }
+    };
+}

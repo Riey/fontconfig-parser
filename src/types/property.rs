@@ -1,11 +1,10 @@
 use crate::{Expression, Value};
-use strum_macros::EnumString;
 
 macro_rules! define_property {
     (
         $(
             $(#[$attr:meta])*
-            $variant:ident($value_ty:ident),
+            $variant:ident($value_ty:ident, $name:expr),
         )+
     ) => {
         #[derive(Clone, Debug, PartialEq)]
@@ -14,25 +13,35 @@ macro_rules! define_property {
                 $(#[$attr])*
                 $variant(Expression),
             )+
+            Dynamic(String, Expression),
         }
 
         impl Property {
-            pub const fn kind(&self) -> PropertyKind {
+            pub fn kind(&self) -> PropertyKind {
                 match self {
                     $(
                         Property::$variant(_) => PropertyKind::$variant,
                     )+
+                    Property::Dynamic(s, _) => PropertyKind::Dynamic(s.clone()),
                 }
             }
         }
 
-        #[derive(Copy, Clone, Debug, Eq, PartialEq, EnumString)]
-        #[strum(serialize_all = "lowercase")]
+        #[derive(Clone, Debug, Eq, PartialEq)]
         pub enum PropertyKind {
             $(
                 $(#[$attr])*
                 $variant,
             )+
+            Dynamic(String),
+        }
+
+        parse_enum! {
+            PropertyKind,
+            $(
+                ($variant, $name),
+            )+
+            |s| Ok(PropertyKind::Dynamic(s.to_string())),
         }
 
         impl PropertyKind {
@@ -41,6 +50,7 @@ macro_rules! define_property {
                     $(
                         PropertyKind::$variant => Property::$variant(expr),
                     )+
+                    PropertyKind::Dynamic(name) => Property::Dynamic(name.clone(), expr),
                 }
             }
         }
@@ -49,106 +59,106 @@ macro_rules! define_property {
 
 define_property! {
     /// Font family names
-    Family(String),
+    Family(String, "family"),
     /// Languages corresponding to each family
-    FamilyLang(String),
+    FamilyLang(String, "familylang"),
     /// Font style. Overrides weight and slant
-    Style(String),
+    Style(String, "style"),
     /// Languages corresponding to each style
-    StyleLang(String),
+    StyleLang(String, "stylelang"),
     /// Font full names (often includes style)
-    FullName(String),
+    FullName(String, "fullname"),
     /// Languages corresponding to each fullname
-    FullNameLang(String),
+    FullNameLang(String, "fullnamelang"),
 
     /// Italic, oblique or roman
-    Slant(Int),
+    Slant(Int, "slant"),
     /// Light, medium, demibold, bold or black
-    Weight(Int),
+    Weight(Int, "weight"),
     /// Point size
-    Size(Double),
+    Size(Double, "size"),
     /// Condensed, normal or expanded
-    Width(Int),
+    Width(Int, "width"),
     /// Stretches glyphs horizontally before hinting
-    Aspect(Double),
+    Aspect(Double, "aspect"),
     /// Pixel size
-    PixelSize(Double),
+    PixelSize(Double, "pixelsize"),
     /// Proportional, dual-width, monospace or charcell
-    Spacing(Int),
+    Spacing(Int, "spacing"),
     /// Font foundry name
-    Foundry(String),
+    Foundry(String, "foundry"),
     /// Whether glyphs can be antialiased
-    Antialias(Bool),
+    Antialias(Bool, "antialias"),
     /// Whether the rasterizer should use hinting
-    Hinting(Bool),
+    Hinting(Bool, "hinting"),
     /// Automatic hinting style
-    HintStyle(Int),
+    HintStyle(Int, "hintstyle"),
     /// Automatic hinting style
-    VerticalLayout(Bool),
+    VerticalLayout(Bool, "verticallayout"),
     /// Use autohinter instead of normal hinter
-    AutoHint(Bool),
+    AutoHint(Bool, "autohint"),
     /// Use font global advance data (deprecated)
-    GlobalAdvance(Bool),
+    GlobalAdvance(Bool, "globaladvance"),
 
     /// The filename holding the font
-    File(String),
+    File(String, "file"),
     /// The index of the font within the file
-    Index(Int),
+    Index(Int, "index"),
     // TODO:
     // /// Use the specified FreeType face object
     // Ftface(FT_Face),
     /// Which rasterizer is in use (deprecated)
-    Rasterizer(String),
+    Rasterizer(String, "rasterizer"),
     /// Whether the glyphs are outlines
-    Outline(Bool),
+    Outline(Bool, "outline"),
     /// Whether glyphs can be scaled
-    Scalable(Bool),
+    Scalable(Bool, "scalable"),
     /// Whether any glyphs have color
-    Color(Bool),
+    Color(Bool, "color"),
     /// Scale factor for point->pixel conversions (deprecated)
-    Scale(Double),
+    Scale(Double, "scale"),
     /// Target dots per inch
-    Dpi(Double),
+    Dpi(Double, "dpi"),
     /// unknown, rgb, bgr, vrgb, vbgr, none - subpixel geometry
-    Rgba(Int),
+    Rgba(Int, "rgba"),
     /// Type of LCD filter
-    Lcdfilter(Int),
+    Lcdfilter(Int, "lcdfilter"),
     /// Eliminate leading from line spacing
-    Minspace(Bool),
+    Minspace(Bool, "minspace"),
     /// Unicode chars encoded by the font
-    Charset(CharSet),
+    Charset(CharSet, "charset"),
     /// List of RFC-3066-style languages this font supports
-    Lang(String),
+    Lang(String, "lang"),
     /// Version number of the font
-    Fontversion(Int),
+    Fontversion(Int, "fontversion"),
     /// List of layout capabilities in the font
-    Capability(String),
+    Capability(String, "capability"),
     /// String name of the font format
-    Fontformat(String),
+    Fontformat(String, "fontformat"),
     /// Rasterizer should synthetically embolden the font
-    Embolden(Bool),
+    Embolden(Bool, "embolden"),
     /// Use the embedded bitmap instead of the outline
-    Embeddedbitmap(Bool),
+    Embeddedbitmap(Bool, "embeddedbitmap"),
     /// Whether the style is a decorative variant
-    Decorative(Bool),
+    Decorative(Bool, "decorative"),
     /// List of the feature tags in OpenType to be enabled
-    Fontfeatures(String),
+    Fontfeatures(String, "fontfeatures"),
     /// Language name to be used for the default value of familylang, stylelang, and fullnamelang
-    Namelang(String),
+    Namelang(String, "namelang"),
     /// String  Name of the running program
-    Prgname(String),
+    Prgname(String, "prgname"),
     /// Font family name in PostScript
-    Postscriptname(String),
+    Postscriptname(String, "postscriptname"),
     /// Whether the font has hinting
-    Fonthashint(Bool),
+    Fonthashint(Bool, "fonthashint"),
     /// Order number of the font
-    Order(Int),
+    Order(Int, "order"),
 
     // custom
 
-    Matrix(Matrix),
-    PixelSizeFixupFactor(Double),
-    ScalingNotNeeded(Bool),
+    Matrix(Matrix, "matrix"),
+    PixelSizeFixupFactor(Double, "pixelsizefixupfactor"),
+    ScalingNotNeeded(Bool, "scalingnotneeded"),
 }
 
 impl Default for Property {

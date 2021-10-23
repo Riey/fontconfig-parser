@@ -1,5 +1,4 @@
 use crate::PropertyKind;
-use strum_macros::EnumString;
 
 macro_rules! define_constant {
     (
@@ -7,8 +6,7 @@ macro_rules! define_constant {
             $variant:ident = $(($ty:ident, $value:expr),)+
         )+
     ) => {
-        #[derive(Copy, Clone, Debug, Eq, PartialEq, EnumString)]
-        #[strum(serialize_all = "lowercase")]
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
         pub enum Constant {
             $(
                 $variant,
@@ -78,6 +76,55 @@ define_constant! {
     Hintslight = (HintStyle, 1),
     Hintmedium = (HintStyle, 2),
     Hintfull = (HintStyle, 3),
+}
+
+parse_enum! {
+    Constant,
+    (Thin, "thin"),
+    (Extralight, "extralight"),
+    (Ultralight, "ultralight"),
+    (Light, "light"),
+    (Demilight, "demilight"),
+    (Semilight, "semilight"),
+    (Book, "book"),
+    (Regular, "regular"),
+    (Normal, "normal"),
+    (Medium, "medium"),
+    (Demibold, "demibold"),
+    (Semibold, "semibold"),
+    (Bold, "bold"),
+    (Extrabold, "extrabold"),
+    (Black, "black"),
+    (Heavy, "heavy"),
+    (Roman, "roman"),
+    (Italic, "italic"),
+    (Oblique, "oblique"),
+    (Ultracondensed, "ultracondensed"),
+    (Extracondensed, "extracondensed"),
+    (Condensed, "condensed"),
+    (Semicondensed, "semicondensed"),
+    (Semiexpanded, "semiexpanded"),
+    (Expanded, "expanded"),
+    (Extraexpanded, "extraexpanded"),
+    (Ultraexpanded, "ultraexpanded"),
+    (Proportional, "proportional"),
+    (Dual, "dual"),
+    (Mono, "mono"),
+    (Charcell, "charcell"),
+    (Unknown, "unknown"),
+    (Rgb, "rgb"),
+    (Bgr, "bgr"),
+    (Vrgb, "vrgb"),
+    (Vbgr, "vbgr"),
+    (None, "none"),
+    (Lcdnone, "lcdnone"),
+    (Lcddefault, "lcddefault"),
+    (Lcdlight, "lcdlight"),
+    (Lcdlegacy, "lcdlegacy"),
+    (Hintnone, "hintnone"),
+    (Hintslight, "hintslight"),
+    (Hintmedium, "hintmedium"),
+    (Hintfull, "hintfull"),
 }
 
 #[test]

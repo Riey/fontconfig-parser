@@ -1,8 +1,6 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-use strum_macros::EnumString;
-
 #[derive(Clone, Debug, Default)]
 pub struct Dir {
     pub prefix: DirPrefix,
@@ -23,13 +21,20 @@ pub struct Include {
     pub path: String,
 }
 
-#[derive(Clone, Copy, Debug, EnumString)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Clone, Copy, Debug)]
 pub enum DirPrefix {
     Default,
     Cwd,
     Xdg,
     Relative,
+}
+
+parse_enum! {
+    DirPrefix,
+    (Default, "default"),
+    (Cwd, "cwd"),
+    (Xdg, "xdg"),
+    (Relative, "relative"),
 }
 
 impl Default for DirPrefix {

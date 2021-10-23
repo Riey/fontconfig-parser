@@ -1,5 +1,4 @@
 use crate::Property;
-use strum_macros::EnumString;
 
 /// This element contains a single value which is compared with the target ('pattern', 'font', 'scan' or 'default') property "property" (substitute any of the property names seen above).
 /// 'compare' can be one of "eq", "not_eq", "less", "less_eq", "more", "more_eq", "contains" or "not_contains".
@@ -16,13 +15,20 @@ pub struct Test {
     pub value: Property,
 }
 
-#[derive(Clone, Copy, Debug, EnumString)]
-#[strum(serialize_all = "snake_case")]
+#[derive(Clone, Copy, Debug)]
 pub enum TestTarget {
     Default,
     Pattern,
     Font,
     Scan,
+}
+
+parse_enum! {
+    TestTarget,
+    (Default, "default"),
+    (Pattern, "pattern"),
+    (Font, "font"),
+    (Scan, "scan"),
 }
 
 impl Default for TestTarget {
@@ -31,8 +37,7 @@ impl Default for TestTarget {
     }
 }
 
-#[derive(Clone, Copy, Debug, EnumString)]
-#[strum(serialize_all = "snake_case")]
+#[derive(Clone, Copy, Debug)]
 pub enum TestCompare {
     Eq,
     NotEq,
@@ -44,17 +49,34 @@ pub enum TestCompare {
     NotContains,
 }
 
+parse_enum! {
+    TestCompare,
+    (Eq, "eq"),
+    (NotEq, "not_eq"),
+    (Less, "less"),
+    (LessEq, "less_eq"),
+    (More, "more"),
+    (MoreEq, "more_eq"),
+    (Contains, "contains"),
+    (NotContains, "not_contains"),
+}
+
 impl Default for TestCompare {
     fn default() -> Self {
         TestCompare::Eq
     }
 }
 
-#[derive(Clone, Copy, Debug, EnumString)]
-#[strum(serialize_all = "snake_case")]
+#[derive(Clone, Copy, Debug)]
 pub enum TestQual {
     Any,
     All,
+}
+
+parse_enum! {
+    TestQual,
+    (Any, "any"),
+    (All, "all"),
 }
 
 impl Default for TestQual {

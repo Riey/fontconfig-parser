@@ -1,5 +1,4 @@
 use crate::Property;
-use strum_macros::EnumString;
 
 #[derive(Clone, Debug, Default)]
 pub struct Edit {
@@ -8,12 +7,18 @@ pub struct Edit {
     pub value: Property,
 }
 
-#[derive(Copy, Clone, Debug, EnumString)]
-#[strum(serialize_all = "snake_case")]
+#[derive(Copy, Clone, Debug)]
 pub enum EditBinding {
     Strong,
     Weak,
     Same,
+}
+
+parse_enum! {
+    EditBinding,
+    (Strong, "strong"),
+    (Weak, "weak"),
+    (Same, "same"),
 }
 
 impl Default for EditBinding {
@@ -22,8 +27,7 @@ impl Default for EditBinding {
     }
 }
 
-#[derive(Copy, Clone, Debug, EnumString)]
-#[strum(serialize_all = "snake_case")]
+#[derive(Copy, Clone, Debug)]
 pub enum EditMode {
     Assign,
     AssignReplace,
@@ -33,6 +37,18 @@ pub enum EditMode {
     AppendLast,
     Delete,
     DeleteAll,
+}
+
+parse_enum! {
+    EditMode,
+    (Assign, "assign"),
+    (AssignReplace, "assign_replace"),
+    (Prepend, "prepend"),
+    (PrependFirst, "prepend_first"),
+    (Append, "append"),
+    (AppendLast, "append_last"),
+    (Delete, "delete"),
+    (DeleteAll, "delete_all"),
 }
 
 impl Default for EditMode {

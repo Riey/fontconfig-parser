@@ -1,42 +1,20 @@
-mod types;
+#[macro_use]
 mod util;
+
+mod error;
+mod types;
 
 use std::io::BufRead;
 use util::AttributeExt;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+pub use crate::error::Error;
 pub use crate::types::*;
 
 pub use quick_xml;
 
 use quick_xml::{events::Event, Reader};
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("XML error: {0}")]
-    Xml(#[from] quick_xml::Error),
-    #[error("DOCTYPE is not fontconfig")]
-    UnmatchedDocType,
-    #[error("Can't find fontconfig element")]
-    NoFontconfig,
-    #[error("Config format is invalid")]
-    InvalidFormat,
-    #[error("Unknown variant: {0}")]
-    ParseError(#[from] strum::ParseError),
-    #[error("Parse int error: {0}")]
-    ParseIntError(#[from] std::num::ParseIntError),
-    #[error("Parse float error: {0}")]
-    ParseFloatError(#[from] std::num::ParseFloatError),
-    #[error("Parse bool error: {0}")]
-    ParseBoolError(#[from] std::str::ParseBoolError),
-}
-
-impl From<std::io::Error> for Error {
-    fn from(e: std::io::Error) -> Self {
-        Self::Xml(e.into())
-    }
-}
 
 /// https://www.freedesktop.org/software/fontconfig/fontconfig-user.html
 #[derive(Clone, Debug, Default)]

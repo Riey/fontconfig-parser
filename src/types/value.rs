@@ -1,5 +1,4 @@
 use crate::{Constant, PropertyKind};
-use strum_macros::EnumString;
 
 pub type Bool = bool;
 pub type Int = u32;
@@ -10,8 +9,7 @@ pub struct CharSet {
     pub ints: Vec<Int>,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, EnumString)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ListOp {
     Times,
     Divide,
@@ -21,8 +19,27 @@ pub enum ListOp {
     Minus,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, EnumString)]
-#[strum(serialize_all = "lowercase")]
+parse_enum! {
+    ListOp,
+    (Times, "times"),
+    (Divide, "divide"),
+    (Or, "or"),
+    (And, "and"),
+    (Plus, "plus"),
+    (Minus, "minus"),
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum UnaryOp {
+    Not,
+}
+
+parse_enum! {
+    UnaryOp,
+    (Not, "not"),
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum BinaryOp {
     Eq,
     NotEq,
@@ -34,16 +51,26 @@ pub enum BinaryOp {
     NotContains,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, EnumString)]
-#[strum(serialize_all = "lowercase")]
-pub enum UnaryOp {
-    Not,
+parse_enum! {
+    BinaryOp,
+    (Eq, "eq"),
+    (NotEq, "noteq"),
+    (Less, "less"),
+    (LessEq, "lesseq"),
+    (More, "more"),
+    (MoreEq, "moreeq"),
+    (Contains, "contains"),
+    (NotContains, "notcontains"),
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, EnumString)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum TernaryOp {
-    Conditional,
+    If,
+}
+
+parse_enum! {
+    TernaryOp,
+    (If, "if"),
 }
 
 #[derive(Clone, Debug, PartialEq)]
