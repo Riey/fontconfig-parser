@@ -5,8 +5,10 @@
 //! # Example
 //!
 //! ```rust
+//! use fontconfig_parser::parse_document_from_str;
+//!
 //! if let Ok(document_str) = std::fs::read_to_string("/etc/fonts/fonts.conf") {
-//!     let document = fontconfig_parser::parse_document_from_str(&document_str).unwrap();
+//!     let document = parse_document_from_str(&document_str).unwrap();
 //! }
 //! ```
 
