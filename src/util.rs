@@ -19,6 +19,12 @@ impl<'a> AttributeExt for Attribute<'a> {
     }
 }
 
+macro_rules! eof {
+    ($($tt:tt)*) => {
+        return Err(crate::Error::Xml(quick_xml::Error::UnexpectedEof(format!($($tt)*))));
+    };
+}
+
 macro_rules! parse_enum {
     (
         $ty:ty,

@@ -20,6 +20,7 @@ use quick_xml::{events::Event, Reader};
 #[derive(Clone, Debug, Default)]
 pub struct Document {
     pub description: String,
+    pub select_fonts: Vec<SelectFont>,
     pub dirs: Vec<Dir>,
     pub cache_dirs: Vec<CacheDir>,
     pub includes: Vec<Include>,
@@ -53,9 +54,7 @@ impl DocumentReader {
                         break Err(Error::InvalidFormat);
                     }
                 }
-                Event::Eof => {
-                    break Err(quick_xml::Error::UnexpectedEof(format!("Expect {:?}", tag)).into())
-                }
+                Event::Eof => eof!("Expect {:?}", tag),
                 _ => {}
             }
         }
@@ -144,9 +143,7 @@ impl DocumentReader {
                         };
                     }
                 },
-                Event::Eof => {
-                    break Err(quick_xml::Error::UnexpectedEof("Expect property".into()).into());
-                }
+                Event::Eof => eof!("Expect property"),
                 _ => {}
             }
         }
@@ -219,6 +216,92 @@ impl DocumentReader {
         Ok(ret)
     }
 
+    fn read_pattern<B: BufRead>(&mut self, reader: &mut Reader<B>) -> Result<FontMatch> {
+        let mut patterns = Vec::new();
+
+        loop {
+            match reader.read_event(&mut self.buf)? {
+                Event::Start(s) => match s.name() {
+                    b"patelt" => {
+                        let kind = match s.attributes().find_map(|a| match a {
+                            Ok(a) => {
+                                if a.key == b"name" {
+                                    Some(a.parse(reader))
+                                } else {
+                                    None
+                                }
+                            }
+                            Err(err) => Some(Err(err.into())),
+                        }) {
+                            Some(kind) => kind?,
+                            None => PropertyKind::default(),
+                        };
+
+                        let value = self.read_value(reader)?;
+
+                        patterns.push(kind.make_property(value));
+                    }
+                    _ => return Err(Error::InvalidFormat),
+                },
+                Event::End(e) if e.name() == b"pattern" => break,
+                Event::Eof => eof!("Expected pattern"),
+                _ => {}
+            }
+        }
+
+        Ok(FontMatch::Pattern(patterns))
+    }
+
+    fn read_glob<B: BufRead>(&mut self, reader: &mut Reader<B>) -> Result<FontMatch> {
+        let pat = reader.read_text(b"glob", &mut self.buf)?;
+        Ok(FontMatch::Glob(pat))
+    }
+
+    fn read_selectfont<B: BufRead>(&mut self, reader: &mut Reader<B>) -> Result<SelectFont> {
+        let mut ret = SelectFont::default();
+
+        loop {
+            match reader.read_event(&mut self.buf)? {
+                Event::Start(s) => match s.name() {
+                    b"acceptfont" => loop {
+                        match reader.read_event(&mut self.buf)? {
+                            Event::Start(s) => match s.name() {
+                                b"pattern" => ret.accepts.push(self.read_pattern(reader)?),
+                                b"glob" => ret.accepts.push(self.read_glob(reader)?),
+                                _ => {}
+                            },
+                            Event::End(e) if e.name() == b"acceptfont" => break,
+                            Event::Eof => eof!("Expected fontmatch"),
+                            _ => {}
+                        }
+                    },
+                    b"rejectfont" => loop {
+                        match reader.read_event(&mut self.buf)? {
+                            Event::Start(s) => match s.name() {
+                                b"pattern" => ret.rejects.push(self.read_pattern(reader)?),
+                                b"glob" => ret.rejects.push(self.read_glob(reader)?),
+                                _ => {}
+                            },
+                            Event::End(e) if e.name() == b"rejectfont" => break,
+                            Event::Eof => eof!("Expected fontmatch"),
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                },
+                Event::End(e) => {
+                    if e.name() == b"selectfont" {
+                        break Ok(ret);
+                    }
+                }
+                Event::Eof => {
+                    eof!("Expected selectfont");
+                }
+                _ => {}
+            }
+        }
+    }
+
     fn read_config<B: BufRead>(&mut self, reader: &mut Reader<B>) -> Result<Config> {
         let mut ret = Config::default();
 
@@ -236,11 +319,7 @@ impl DocumentReader {
                         break Ok(ret);
                     }
                 }
-                Event::Eof => {
-                    break Err(Error::Xml(quick_xml::Error::UnexpectedEof(format!(
-                        "Expected config"
-                    ))))
-                }
+                Event::Eof => eof!("Expected config"),
                 _ => {}
             }
         }
@@ -275,6 +354,9 @@ impl DocumentReader {
         loop {
             match reader.read_event(&mut self.buf)? {
                 Event::Start(s) => match s.name() {
+                    b"selectfont" => {
+                        ret.select_fonts.push(self.read_selectfont(reader)?);
+                    }
                     b"alias" => {
                         // TODO
                         reader.read_to_end(b"alias", &mut self.buf)?;
