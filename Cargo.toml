@@ -8,6 +8,3 @@ license = "MIT"
 
 [dependencies]
 quick-xml = { version = "0.22.0", default-features = false }
-
-[dev-dependencies]
-regex = "1.5.4"

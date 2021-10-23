@@ -5,7 +5,6 @@ use std::path::PathBuf;
 
 fn visit_document(
     doc: &Document,
-    name_regex: &regex::Regex,
     doc_path: PathBuf,
     reader: &mut DocumentReader,
     dirs: &mut HashSet<PathBuf>,
@@ -30,10 +29,14 @@ fn visit_document(
             .filter_map(|entry| {
                 let entry = entry.ok()?;
                 let doc_path = entry.path();
+                let doc_path_name = doc_path.file_name().unwrap().to_str().unwrap();
                 if entry
                     .file_type()
                     .map_or(false, |t| t.is_file() || t.is_symlink())
-                    && name_regex.is_match(doc_path.as_os_str().to_str().unwrap())
+                    && matches!(
+                        doc_path_name.as_bytes(),
+                        [b'0'..=b'9', .., b'.', b'c', b'o', b'n', b'f']
+                    )
                 {
                     Some(doc_path)
                 } else {
@@ -47,7 +50,7 @@ fn visit_document(
         for doc_path in paths {
             println!("Read: {}", doc_path.display());
             let doc = reader.read_document(&mut Reader::from_file(&doc_path)?)?;
-            visit_document(&doc, name_regex, doc_path, reader, dirs)?;
+            visit_document(&doc, doc_path, reader, dirs)?;
         }
     }
 
@@ -75,12 +78,11 @@ fn visit_dir(dir: PathBuf, fonts: &mut Vec<PathBuf>) -> Result<()> {
 fn main() -> Result<()> {
     let mut reader = DocumentReader::new();
     let mut dirs = HashSet::new();
-    let name_regex = regex::Regex::new(r#"[0-9].+\.conf"#).unwrap();
 
     let root_path = PathBuf::from("/etc/fonts/fonts.conf");
     let root = reader.read_document(&mut Reader::from_file(&root_path)?)?;
 
-    visit_document(&root, &name_regex, root_path, &mut reader, &mut dirs)?;
+    visit_document(&root, root_path, &mut reader, &mut dirs)?;
 
     println!("dirs: {:#?}", dirs);
 
