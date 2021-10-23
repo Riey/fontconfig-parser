@@ -325,6 +325,7 @@ impl DocumentReader {
         }
     }
 
+    /// Read `Document` from `quick_xml::Reader`
     pub fn read_document<B: BufRead>(&mut self, reader: &mut Reader<B>) -> Result<Document> {
         self.clear();
 

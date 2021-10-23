@@ -46,6 +46,7 @@ impl Default for DirPrefix {
 macro_rules! define_calculate_path {
     ($ty:ty, $xdg_env:expr, $xdg_fallback:expr) => {
         impl $ty {
+            /// Calculate actual path
             pub fn calculate_path<P: AsRef<Path> + ?Sized>(&self, config_file_path: &P) -> PathBuf {
                 match self.prefix {
                     DirPrefix::Default => self.path.as_str().into(),

@@ -54,6 +54,24 @@ fn visit_document(
     Ok(())
 }
 
+fn visit_dir(dir: PathBuf, fonts: &mut Vec<PathBuf>) -> Result<()> {
+    let dir = std::fs::read_dir(dir)?;
+
+    for entry in dir {
+        if let Ok(entry) = entry {
+            if let Ok(ty) = entry.file_type() {
+                if ty.is_dir() {
+                    visit_dir(entry.path(), fonts).ok();
+                } else if ty.is_file() || ty.is_symlink() {
+                    fonts.push(entry.path());
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let mut reader = DocumentReader::new();
     let mut dirs = HashSet::new();
@@ -64,7 +82,17 @@ fn main() -> Result<()> {
 
     visit_document(&root, &name_regex, root_path, &mut reader, &mut dirs)?;
 
-    println!("{:#?}", dirs);
+    println!("dirs: {:#?}", dirs);
+
+    let mut fonts = Vec::new();
+
+    for dir in dirs {
+        visit_dir(dir, &mut fonts).ok();
+    }
+
+    println!("Find all {} fonts!", fonts.len());
+
+    println!("fonts: {:#?}", fonts);
 
     Ok(())
 }
