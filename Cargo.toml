@@ -7,7 +7,8 @@ description = "fontconfig file parser in pure Rust"
 repository = "https://github.com/Riey/fontconfig-parser"
 homepage = "https://github.com/Riey/fontconfig-parser"
 readme = "README.md"
-categories = ["fontconfig"]
+categories = ["parser-implementations", "no-std"]
+keywords = ["fontconfig"]
 
 [features]
 default = ["std", "xmlparser/std"]
