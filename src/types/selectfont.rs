@@ -1,13 +1,13 @@
 use crate::Property;
 
 #[derive(Clone, Debug, Default)]
-pub struct SelectFont {
-    pub rejects: Vec<FontMatch>,
-    pub accepts: Vec<FontMatch>,
+pub struct SelectFont<'a> {
+    pub rejects: Vec<FontMatch<'a>>,
+    pub accepts: Vec<FontMatch<'a>>,
 }
 
 #[derive(Clone, Debug)]
-pub enum FontMatch {
-    Glob(String),
-    Pattern(Vec<Property>),
+pub enum FontMatch<'a> {
+    Glob(&'a str),
+    Pattern(Vec<Property<'a>>),
 }

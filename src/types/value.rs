@@ -74,26 +74,26 @@ parse_enum! {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Expression {
-    Simple(Value),
+pub enum Expression<'a> {
+    Simple(Value<'a>),
     Unary(Box<Self>, UnaryOp),
     Binary(Box<Self>, Box<Self>, BinaryOp),
     Ternary(Box<Self>, Box<Self>, Box<Self>, TernaryOp),
     List(Vec<Self>, ListOp),
 }
 
-impl From<Value> for Expression {
-    fn from(v: Value) -> Self {
+impl<'a> From<Value<'a>> for Expression<'a> {
+    fn from(v: Value<'a>) -> Self {
         Expression::Simple(v)
     }
 }
 
 /// Runtime typed fontconfig value
 #[derive(Clone, Debug, PartialEq)]
-pub enum Value {
+pub enum Value<'a> {
     Int(Int),
     Double(Double),
-    String(String),
+    String(&'a str),
     Const(Constant),
     Bool(Bool),
     Matrix([Double; 4]),
@@ -101,7 +101,7 @@ pub enum Value {
     CharSet(CharSet),
     Property(PropertyKind),
 
-    Prefer(Vec<String>),
-    Accept(Vec<String>),
-    Default(Vec<String>),
+    Prefer(Vec<&'a str>),
+    Accept(Vec<&'a str>),
+    Default(Vec<&'a str>),
 }

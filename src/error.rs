@@ -6,10 +6,12 @@ use std::str::ParseBoolError;
 
 #[derive(Debug)]
 pub enum Error {
-    Xml(quick_xml::Error),
+    Xml(xmlparser::Error),
+    UnexpectedEof(String),
     UnmatchedDocType,
     NoFontconfig,
     InvalidFormat,
+    IoError(std::io::Error),
     ParseEnumError(&'static str, String),
     ParseIntError(ParseIntError),
     ParseFloatError(ParseFloatError),
@@ -18,12 +20,12 @@ pub enum Error {
 
 impl From<std::io::Error> for Error {
     fn from(e: std::io::Error) -> Self {
-        Self::Xml(e.into())
+        Self::IoError(e)
     }
 }
 
-impl From<quick_xml::Error> for Error {
-    fn from(e: quick_xml::Error) -> Self {
+impl From<xmlparser::Error> for Error {
+    fn from(e: xmlparser::Error) -> Self {
         Self::Xml(e)
     }
 }
@@ -50,9 +52,11 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::Xml(e) => e.fmt(f),
+            Error::UnexpectedEof(msg) => write!(f, "Get Unexpected eof: {}", msg),
             Error::UnmatchedDocType => write!(f, "DOCTYPE is not fontconfig"),
             Error::NoFontconfig => write!(f, "Can't find fontconfig element"),
             Error::InvalidFormat => write!(f, "Config format is invalid"),
+            Error::IoError(e) => write!(f, "IO error: {}", e),
             Error::ParseEnumError(ty, s) => write!(f, "Unknown variant for {}: {}", ty, s),
             Error::ParseIntError(e) => e.fmt(f),
             Error::ParseFloatError(e) => e.fmt(f),

@@ -2,23 +2,23 @@ use std::env;
 use std::path::{Path, PathBuf};
 
 #[derive(Clone, Debug, Default)]
-pub struct Dir {
+pub struct Dir<'a> {
     pub prefix: DirPrefix,
-    pub salt: Option<String>,
-    pub path: String,
+    pub salt: &'a str,
+    pub path: &'a str,
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct CacheDir {
+pub struct CacheDir<'a> {
     pub prefix: DirPrefix,
-    pub path: String,
+    pub path: &'a str,
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct Include {
+pub struct Include<'a> {
     pub prefix: DirPrefix,
     pub ignore_missing: bool,
-    pub path: String,
+    pub path: &'a str,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -44,17 +44,17 @@ impl Default for DirPrefix {
 }
 
 macro_rules! define_calculate_path {
-    ($ty:ty, $xdg_env:expr, $xdg_fallback:expr) => {
-        impl $ty {
+    ($ty:ident, $xdg_env:expr, $xdg_fallback:expr) => {
+        impl<'a> $ty<'a> {
             /// Calculate actual path
             pub fn calculate_path<P: AsRef<Path> + ?Sized>(&self, config_file_path: &P) -> PathBuf {
                 match self.prefix {
-                    DirPrefix::Default => self.path.as_str().into(),
-                    DirPrefix::Cwd => Path::new(".").join(&self.path),
-                    DirPrefix::Relative => config_file_path.as_ref().join(&self.path),
+                    DirPrefix::Default => self.path.into(),
+                    DirPrefix::Cwd => Path::new(".").join(self.path),
+                    DirPrefix::Relative => config_file_path.as_ref().join(self.path),
                     DirPrefix::Xdg => {
                         PathBuf::from(env::var($xdg_env).unwrap_or_else(|_| $xdg_fallback.into()))
-                            .join(&self.path)
+                            .join(self.path)
                     }
                 }
             }

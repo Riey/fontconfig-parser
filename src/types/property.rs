@@ -8,15 +8,15 @@ macro_rules! define_property {
         )+
     ) => {
         #[derive(Clone, Debug, PartialEq)]
-        pub enum Property {
+        pub enum Property<'a> {
             $(
                 $(#[$attr])*
-                $variant(Expression),
+                $variant(Expression<'a>),
             )+
-            Dynamic(String, Expression),
+            Dynamic(String, Expression<'a>),
         }
 
-        impl Property {
+        impl<'a> Property<'a> {
             pub fn kind(&self) -> PropertyKind {
                 match self {
                     $(
@@ -161,9 +161,9 @@ define_property! {
     ScalingNotNeeded(Bool, "scalingnotneeded"),
 }
 
-impl Default for Property {
+impl<'a> Default for Property<'a> {
     fn default() -> Self {
-        Property::Family(Expression::Simple(Value::String(String::new())))
+        Property::Family(Expression::Simple(Value::String("")))
     }
 }
 

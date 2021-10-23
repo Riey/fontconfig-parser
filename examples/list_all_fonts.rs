@@ -1,14 +1,9 @@
-use fontconfig_parser::{quick_xml::Reader, Document, DocumentReader, Result};
+use fontconfig_parser::{parse_document_from_str, Document, Result};
 use std::collections::HashSet;
 use std::fs;
 use std::path::PathBuf;
 
-fn visit_document(
-    doc: &Document,
-    doc_path: PathBuf,
-    reader: &mut DocumentReader,
-    dirs: &mut HashSet<PathBuf>,
-) -> Result<()> {
+fn visit_document(doc: &Document, doc_path: PathBuf, dirs: &mut HashSet<PathBuf>) -> Result<()> {
     dirs.extend(doc.dirs.iter().map(|d| d.calculate_path(&doc_path)));
 
     for include in doc.includes.iter() {
@@ -49,8 +44,9 @@ fn visit_document(
 
         for doc_path in paths {
             println!("Read: {}", doc_path.display());
-            let doc = reader.read_document(&mut Reader::from_file(&doc_path)?)?;
-            visit_document(&doc, doc_path, reader, dirs)?;
+            let doc_conf = std::fs::read_to_string(&doc_path)?;
+            let doc = parse_document_from_str(&doc_conf)?;
+            visit_document(&doc, doc_path, dirs)?;
         }
     }
 
@@ -76,13 +72,12 @@ fn visit_dir(dir: PathBuf, fonts: &mut Vec<PathBuf>) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let mut reader = DocumentReader::new();
+    let root_path = PathBuf::from("/etc/fonts/fonts.conf");
+    let root_config = std::fs::read_to_string(&root_path)?;
+    let root = parse_document_from_str(&root_config)?;
     let mut dirs = HashSet::new();
 
-    let root_path = PathBuf::from("/etc/fonts/fonts.conf");
-    let root = reader.read_document(&mut Reader::from_file(&root_path)?)?;
-
-    visit_document(&root, root_path, &mut reader, &mut dirs)?;
+    visit_document(&root, root_path, &mut dirs)?;
 
     println!("dirs: {:#?}", dirs);
 

@@ -8,11 +8,11 @@ use crate::Property;
 /// When used in a <match target="font"> element, the target= attribute in the <test> element selects between matching the original pattern or the font.
 /// "default" selects whichever target the outer <match> element has selected.
 #[derive(Clone, Debug, Default)]
-pub struct Test {
+pub struct Test<'a> {
     pub qual: TestQual,
     pub target: TestTarget,
     pub compare: TestCompare,
-    pub value: Property,
+    pub value: Property<'a>,
 }
 
 #[derive(Clone, Copy, Debug)]

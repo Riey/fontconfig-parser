@@ -1,10 +1,10 @@
 use crate::Property;
 
 #[derive(Clone, Debug, Default)]
-pub struct Edit {
+pub struct Edit<'a> {
     pub mode: EditMode,
     pub binding: EditBinding,
-    pub value: Property,
+    pub value: Property<'a>,
 }
 
 #[derive(Copy, Clone, Debug)]

@@ -1,27 +1,75 @@
-use std::io::BufRead;
-
-use quick_xml::{events::attributes::Attribute, Reader};
-
-use crate::Result;
-
-pub trait AttributeExt {
-    fn parse<T: std::str::FromStr, B: BufRead>(&self, reader: &Reader<B>) -> Result<T>
-    where
-        crate::Error: From<T::Err>;
+macro_rules! try_opt {
+    ($opt:expr, $($tt:tt)*) => {
+        match $opt {
+            Some(t) => t,
+            None => Err(crate::Error::UnexpectedEof(format!($($tt)*))),
+        }
+    };
 }
 
-impl<'a> AttributeExt for Attribute<'a> {
-    fn parse<T: std::str::FromStr, B: BufRead>(&self, reader: &Reader<B>) -> Result<T>
-    where
-        crate::Error: From<T::Err>,
-    {
-        Ok(self.unescape_and_decode_without_bom(reader)?.parse()?)
-    }
+macro_rules! parse_attrs {
+    ($tokens:expr, { $($key:expr => $lvalue:expr,)+ } $(, { $($str_key:expr => $str_lvalue:expr,)+ } )?) => {
+        for attr in take_attrs!($tokens) {
+            let (key, value) = attr?;
+
+            match key {
+                $(
+                    $key => $lvalue = value.parse()?,
+                )+
+                $(
+                    $(
+                        $str_key => $str_lvalue = value,
+                    )+
+                )?
+                _ => {}
+            }
+        }
+    };
 }
 
-macro_rules! eof {
-    ($($tt:tt)*) => {
-        return Err(crate::Error::Xml(quick_xml::Error::UnexpectedEof(format!($($tt)*))));
+macro_rules! take_attrs {
+    ($tokens:expr) => {
+        $tokens
+            .take_while(|t| {
+                !matches!(
+                    t,
+                    Ok(Token::ElementEnd {
+                        end: ElementEnd::Open,
+                        ..
+                    })
+                )
+            })
+            .filter_map(|t| match t {
+                Ok(Token::Attribute { local, value, .. }) => {
+                    Some(Ok((local.as_str(), value.as_str())))
+                }
+                Ok(_) => None,
+                Err(err) => Some(Err(err)),
+            })
+    };
+}
+
+macro_rules! take_while_end {
+    ($tokens:expr, $tag:expr) => {
+        let mut depth = 1;
+        loop {
+            match try_opt!($tokens.next(), "Expect: {}", $tag)? {
+                Token::ElementStart { local, .. } if local.as_str() == $tag => {
+                    depth += 1;
+                }
+                Token::ElementEnd {
+                    end: ElementEnd::Close(_, e),
+                    ..
+                } if e.as_str() == $tag => {
+                    depth -= 1;
+
+                    if depth == 0 {
+                        break;
+                    }
+                }
+                _ => {}
+            }
+        }
     };
 }
 

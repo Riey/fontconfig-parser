@@ -3,10 +3,8 @@ use criterion::{criterion_group, criterion_main, Criterion};
 fn parse_test(c: &mut Criterion) {
     c.bench_function("parse_full", |b| {
         b.iter(|| {
-            let mut reader = fontconfig_parser::DocumentReader::new();
-            reader
-                .read_document(&mut quick_xml::Reader::from_file("test-conf/fonts.conf").unwrap())
-                .unwrap();
+            let s = std::fs::read_to_string("test-conf/fonts.conf").unwrap();
+            fontconfig_parser::parse_document_from_str(&s).unwrap();
         });
     });
 }
