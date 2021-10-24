@@ -1,6 +1,5 @@
 fn main() {
     let args = std::env::args().collect::<Vec<_>>();
-
     if args.len() < 2 {
         eprintln!("Usage: cargo run --example dump -- <conf file path>");
         return;
