@@ -197,9 +197,9 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
 
                 doc.matches.push(m);
             }
-            other => {
+            _ => {
                 #[cfg(feature = "std")]
-                eprintln!("Ignore {}", other);
+                eprintln!("Ignore {:?}", child.tag_name());
             }
         }
     }

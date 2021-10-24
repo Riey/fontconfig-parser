@@ -2,7 +2,7 @@ macro_rules! try_text {
 	($node:expr) => {
         match $node.text() {
             Some(t) => t,
-            None => return Err(crate::Error::InvalidFormat),
+            None => return Err(crate::Error::InvalidFormat("Can't get text".into())),
         }
 	};
 }

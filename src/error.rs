@@ -8,10 +8,9 @@ use core::str::ParseBoolError;
 #[derive(Debug)]
 pub enum Error {
     Xml(roxmltree::Error),
-    UnexpectedEof(String),
     UnmatchedDocType,
     NoFontconfig,
-    InvalidFormat,
+    InvalidFormat(String),
     #[cfg(feature = "std")]
     IoError(std::io::Error),
     ParseEnumError(&'static str, String),
@@ -55,10 +54,9 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::Xml(e) => e.fmt(f),
-            Error::UnexpectedEof(msg) => write!(f, "Get Unexpected eof: {}", msg),
             Error::UnmatchedDocType => write!(f, "DOCTYPE is not fontconfig"),
             Error::NoFontconfig => write!(f, "Can't find fontconfig element"),
-            Error::InvalidFormat => write!(f, "Config format is invalid"),
+            Error::InvalidFormat(msg) => write!(f, "Config format is invalid: {}", msg),
             #[cfg(feature = "std")]
             Error::IoError(e) => write!(f, "IO error: {}", e),
             Error::ParseEnumError(ty, s) => write!(f, "Unknown variant for {}: {}", ty, s),
