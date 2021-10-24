@@ -7,6 +7,24 @@ macro_rules! try_text {
 	};
 }
 
+macro_rules! parse_attrs_opt {
+    ($node:expr, { $($key:expr => $lvalue:expr,)+ } $(, { $($str_key:expr => $str_lvalue:expr,)+ } )?) => {
+        for attr in $node.attributes() {
+            match attr.name() {
+                $(
+                    $key => $lvalue = attr.value().parse().ok()?,
+                )+
+                $(
+                    $(
+                        $str_key => $str_lvalue = attr.value().into(),
+                    )+
+                )?
+                _ => {}
+            }
+        }
+    };
+}
+
 macro_rules! parse_attrs {
     ($node:expr, { $($key:expr => $lvalue:expr,)+ } $(, { $($str_key:expr => $str_lvalue:expr,)+ } )?) => {
         for attr in $node.attributes() {

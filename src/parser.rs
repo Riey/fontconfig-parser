@@ -82,6 +82,44 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
                     }
                 }
             }
+            "selectfont" => {
+                let mut s = SelectFont::default();
+
+                for child in child.children() {
+                    let matches = child.children().filter_map(|c| match c.tag_name().name() {
+                        "pattern" => {
+                            let patelts = c.children().filter_map(|patelt| {
+                                if patelt.tag_name().name() == "patelt" {
+                                    let mut kind = PropertyKind::default();
+                                    parse_attrs_opt!(patelt, {
+                                        "name" => kind,
+                                    });
+                                    parse_expr(patelt.first_element_child()?)
+                                        .ok()
+                                        .map(|expr| kind.make_property(expr))
+                                } else {
+                                    None
+                                }
+                            });
+                            Some(FontMatch::Pattern(patelts.collect()))
+                        }
+                        "glob" => c.text().map(Into::into).map(FontMatch::Glob),
+                        _ => None,
+                    });
+
+                    match child.tag_name().name() {
+                        "acceptfont" => {
+                            s.accepts.extend(matches);
+                        }
+                        "rejectfont" => {
+                            s.rejects.extend(matches);
+                        }
+                        _ => {}
+                    }
+                }
+
+                doc.select_fonts.push(s);
+            }
             "match" => {
                 let mut m = Match::default();
 
