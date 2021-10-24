@@ -152,6 +152,12 @@ from_value! {
     CharSet,
 }
 
+impl<'a> From<&'a str> for Value {
+    fn from(s: &'a str) -> Self {
+        Value::String(s.into())
+    }
+}
+
 impl From<(PropertyTarget, PropertyKind)> for Value {
     fn from((target, kind): (PropertyTarget, PropertyKind)) -> Self {
         Value::Property(target, kind)
