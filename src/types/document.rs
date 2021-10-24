@@ -1,5 +1,7 @@
 use crate::{Alias, CacheDir, Config, Dir, Include, Match, SelectFont};
 #[cfg(not(feature = "std"))]
+use alloc::string::String;
+#[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 
 /// <https://www.freedesktop.org/software/fontconfig/fontconfig-user.html>

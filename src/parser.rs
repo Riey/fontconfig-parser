@@ -21,19 +21,20 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
                 doc.description = child
                     .first_child()
                     .and_then(|c| c.text())
-                    .map(String::from)
+                    .map(Into::into)
                     .unwrap_or_default();
             }
             "alias" => {
                 let mut alias = Alias::default();
 
                 for child in child.children() {
-                    let families = child
-                        .children()
-                        .filter_map(|family| match family.tag_name().name() {
-                            "family" => family.text().map(Into::into),
-                            _ => None,
-                        });
+                    let families =
+                        child
+                            .children()
+                            .filter_map(|family| match family.tag_name().name() {
+                                "family" => family.text().map(Into::into),
+                                _ => None,
+                            });
 
                     match child.tag_name().name() {
                         "family" => {
@@ -208,6 +209,23 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
 }
 
 fn parse_expr(node: Node) -> Result<Expression> {
+    let mut exprs = node.children().filter_map(|n| {
+        if n.is_element() {
+            Some(parse_expr(n))
+        } else {
+            None
+        }
+    });
+
+    macro_rules! expr {
+        () => {
+            match exprs.next() {
+                Some(expr) => expr?,
+                None => return Err(Error::InvalidFormat("Expect expression".into())),
+            }
+        };
+    }
+
     match node.tag_name().name() {
         "string" => return Ok(Value::String(try_text!(node).into()).into()),
         "double" => return Ok(Value::Double(try_text!(node).parse()?).into()),
@@ -215,18 +233,12 @@ fn parse_expr(node: Node) -> Result<Expression> {
         "bool" => return Ok(Value::Bool(try_text!(node).parse()?).into()),
         "const" => return Ok(Value::Constant(try_text!(node).parse()?).into()),
         "matrix" => {
-            let list = node
-                .children()
-                .filter_map(|n| {
-                    if n.is_element() {
-                        Some(parse_expr(n))
-                    } else {
-                        None
-                    }
-                })
-                .collect::<Result<Vec<_>>>()?;
-
-            return Ok(Expression::Matrix(list));
+            return Ok(Expression::Matrix(Box::new([
+                expr!(),
+                expr!(),
+                expr!(),
+                expr!(),
+            ])));
         }
         "name" => {
             let mut target = PropertyTarget::default();
@@ -238,111 +250,24 @@ fn parse_expr(node: Node) -> Result<Expression> {
             return Ok(Value::Property(target, kind).into());
         }
         name => {
-            let list = node
-                .children()
-                .filter_map(|n| {
-                    if n.is_element() {
-                        Some(parse_expr(n))
-                    } else {
-                        None
-                    }
-                })
-                .collect::<Result<Vec<_>>>()?;
-
             return if let Ok(list_op) = name.parse() {
-                Ok(Expression::List(list_op, list))
+                Ok(Expression::List(
+                    list_op,
+                    exprs.collect::<Result<Vec<_>>>()?.into_boxed_slice(),
+                ))
             } else if let Ok(unary_op) = name.parse() {
-                Ok(Expression::Unary(unary_op, list))
+                Ok(Expression::Unary(unary_op, Box::new(expr!())))
             } else if let Ok(binary_op) = name.parse() {
-                Ok(Expression::Binary(binary_op, list))
+                Ok(Expression::Binary(binary_op, Box::new([expr!(), expr!()])))
             } else if let Ok(ternary_op) = name.parse() {
-                Ok(Expression::Ternary(ternary_op, list))
+                Ok(Expression::Ternary(
+                    ternary_op,
+                    Box::new([expr!(), expr!(), expr!()]),
+                ))
             } else {
                 todo!("{:?}", name)
             };
         }
     }
 }
-//
-// fn parse_selectfont<'a>(
-//     tokens: &mut impl Iterator<Item = Result<Token<'a>>>,
-// ) -> Result<SelectFont<'a>> {
-//     let mut s = SelectFont::default();
-//
-//     loop {
-//         match try_opt!(tokens.next(), "Expect selectfont")? {
-//             Token::ElementStart { local, .. } => match local.as_str() {
-//                 "acceptfont" => loop {
-//                     match try_opt!(tokens.next(), "Expect acceptfont")? {
-//                         Token::ElementStart { local, .. } => match local.as_str() {
-//                             "glob" => s.accepts.push(parse_glob(tokens)?),
-//                             "pattern" => s.accepts.push(parse_pattern(tokens)?),
-//                             _ => {}
-//                         },
-//                         Token::ElementEnd {
-//                             end: ElementEnd::Close(_, e),
-//                             ..
-//                         } if e.as_str() == "acceptfont" => break,
-//                         _ => {}
-//                     }
-//                 },
-//                 "rejectfont" => loop {
-//                     match try_opt!(tokens.next(), "Expect rejectfont")? {
-//                         Token::ElementStart { local, .. } => match local.as_str() {
-//                             "glob" => s.rejects.push(parse_glob(tokens)?),
-//                             "pattern" => s.rejects.push(parse_pattern(tokens)?),
-//                             _ => {}
-//                         },
-//                         Token::ElementEnd {
-//                             end: ElementEnd::Close(_, e),
-//                             ..
-//                         } if e.as_str() == "rejectfont" => break,
-//                         _ => {}
-//                     }
-//                 },
-//                 _ => {}
-//             },
-//             Token::ElementEnd {
-//                 end: ElementEnd::Close(_, e),
-//                 ..
-//             } if e.as_str() == "selectfont" => break,
-//             _ => {}
-//         }
-//     }
-//
-//     Ok(s)
-// }
-//
-// fn parse_glob<'a>(tokens: &mut impl Iterator<Item = Result<Token<'a>>>) -> Result<FontMatch<'a>> {
-//     Ok(FontMatch::Glob(try_text!(child_root)?))
-// }
-//
-// fn parse_pattern<'a>(
-//     tokens: &mut impl Iterator<Item = Result<Token<'a>>>,
-// ) -> Result<FontMatch<'a>> {
-//     let mut patterns = Vec::new();
-//
-//     loop {
-//         match try_opt!(tokens.next(), "Expect pattern")? {
-//             Token::ElementStart { local, .. } => match local.as_str() {
-//                 "patelt" => {
-//                     let mut kind = PropertyKind::default();
-//
-//                     parse_attrs!(tokens, {
-//                         "name" => kind,
-//                     });
-//
-//                     patterns.push(kind.make_property(parse_expr(tokens)?));
-//                 }
-//                 _ => {}
-//             },
-//             Token::ElementEnd {
-//                 end: ElementEnd::Close(_, e),
-//                 ..
-//             } if e.as_str() == "pattern" => break,
-//             _ => {}
-//         }
-//     }
-//
-//     Ok(FontMatch::Pattern(patterns))
-// }
+

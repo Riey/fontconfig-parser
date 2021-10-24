@@ -82,11 +82,11 @@ parse_enum! {
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
     Simple(Value),
-    Unary(UnaryOp, Vec<Self>),
-    Binary(BinaryOp, Vec<Self>),
-    Ternary(TernaryOp, Vec<Self>),
-    List(ListOp, Vec<Self>),
-    Matrix(Vec<Self>),
+    Unary(UnaryOp, Box<Self>),
+    Binary(BinaryOp, Box<[Self; 2]>),
+    Ternary(TernaryOp, Box<[Self; 3]>),
+    List(ListOp, Box<[Self]>),
+    Matrix(Box<[Self; 4]>),
 }
 
 #[derive(Clone, Debug, PartialEq)]

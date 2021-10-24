@@ -23,10 +23,10 @@ fn scale_10() {
                     binding: EditBinding::default(),
                     value: Property::PixelSizeFixupFactor(Expression::List(
                         ListOp::Divide,
-                        vec![
+                        Box::new([
                             (PropertyTarget::Pattern, PropertyKind::PixelSize).into(),
                             (PropertyTarget::Font, PropertyKind::PixelSize).into(),
-                        ],
+                        ]),
                     )),
                 }],
             },
@@ -54,24 +54,24 @@ fn scale_10() {
                     mode: EditMode::Assign,
                     value: Property::ScalingNotNeeded(Expression::List(
                         ListOp::And,
-                        vec![
+                        Box::new([
                             Expression::Binary(
                                 BinaryOp::Less,
-                                vec![
+                                Box::new([
                                     (PropertyTarget::Default, PropertyKind::PixelSizeFixupFactor)
                                         .into(),
                                     1.2.into(),
-                                ],
+                                ]),
                             ),
                             Expression::Binary(
                                 BinaryOp::More,
-                                vec![
+                                Box::new([
                                     (PropertyTarget::Default, PropertyKind::PixelSizeFixupFactor)
                                         .into(),
                                     0.8.into(),
-                                ],
+                                ]),
                             ),
-                        ],
+                        ]),
                     )),
                 }],
             },
@@ -111,17 +111,17 @@ fn scale_10() {
                         binding: EditBinding::Weak,
                         value: Property::Matrix(Expression::List(
                             ListOp::Times,
-                            vec![
+                            Box::new([
                                 (PropertyTarget::Default, PropertyKind::Matrix).into(),
-                                Expression::Matrix(vec![
+                                Expression::Matrix(Box::new([
                                     (PropertyTarget::Default, PropertyKind::PixelSizeFixupFactor)
                                         .into(),
                                     0.0.into(),
                                     0.0.into(),
                                     (PropertyTarget::Default, PropertyKind::PixelSizeFixupFactor)
                                         .into(),
-                                ]),
-                            ],
+                                ])),
+                            ]),
                         )),
                     },
                     Edit {
@@ -129,11 +129,11 @@ fn scale_10() {
                         binding: EditBinding::Weak,
                         value: Property::Size(Expression::List(
                             ListOp::Divide,
-                            vec![
+                            Box::new([
                                 (PropertyTarget::Default, PropertyKind::Size).into(),
                                 (PropertyTarget::Default, PropertyKind::PixelSizeFixupFactor)
                                     .into(),
-                            ],
+                            ]),
                         )),
                     },
                 ],
