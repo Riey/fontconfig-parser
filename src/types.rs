@@ -1,3 +1,4 @@
+mod alias;
 mod config;
 mod constant;
 mod dir;
@@ -8,5 +9,5 @@ mod selectfont;
 mod value;
 
 pub use self::{
-    config::*, constant::*, dir::*, document::*, match_::*, property::*, selectfont::*, value::*,
+    alias::*, config::*, constant::*, dir::*, document::*, match_::*, property::*, selectfont::*, value::*,
 };

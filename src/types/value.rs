@@ -125,10 +125,6 @@ pub enum Value {
     CharSet(CharSet),
     /// <name target="font">pixelsize</name>
     Property(PropertyTarget, PropertyKind),
-
-    Prefer(Vec<String>),
-    Accept(Vec<String>),
-    Default(Vec<String>),
 }
 
 macro_rules! from_value {

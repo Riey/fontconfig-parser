@@ -1,4 +1,4 @@
-use crate::{CacheDir, Config, Dir, Include, Match, SelectFont};
+use crate::{Alias, CacheDir, Config, Dir, Include, Match, SelectFont};
 #[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 
@@ -12,4 +12,5 @@ pub struct Document {
     pub includes: Vec<Include>,
     pub matches: Vec<Match>,
     pub config: Config,
+    pub aliases: Vec<Alias>,
 }
