@@ -71,7 +71,10 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
 
                 doc.matches.push(m);
             }
-            _ => {}
+            other => {
+                #[cfg(feature = "std")]
+                eprintln!("Ignore {}", other);
+            }
         }
     }
 
