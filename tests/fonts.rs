@@ -68,7 +68,7 @@ fn fonts() {
             },
             CacheDir {
                 prefix: DirPrefix::Default,
-                path: "fontconfig".into(),
+                path: "/var/cache/fontconfig".into(),
             },
         ],
         includes: vec![Include {

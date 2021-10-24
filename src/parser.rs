@@ -24,6 +24,49 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
                     .map(String::from)
                     .unwrap_or_default();
             }
+            "dir" => {
+                let mut dir = Dir::default();
+
+                parse_attrs!(child, {
+                    "prefix" => dir.prefix,
+                }, {
+                    "salt" => dir.salt,
+                });
+
+                dir.path = try_text!(child).into();
+
+                doc.dirs.push(dir);
+            }
+            "cachedir" => {
+                let mut dir = CacheDir::default();
+
+                parse_attrs!(child, {
+                    "prefix" => dir.prefix,
+                });
+
+                dir.path = try_text!(child).into();
+
+                doc.cache_dirs.push(dir);
+            }
+            "include" => {
+                let mut dir = Include::default();
+                let mut ignore_missing = "";
+
+                parse_attrs!(child, {
+                    "prefix" => dir.prefix,
+                }, {
+                    "ignore_missing" => ignore_missing,
+                });
+
+                dir.ignore_missing = match ignore_missing {
+                    "yes" => true,
+                    _ => false,
+                };
+
+                dir.path = try_text!(child).into();
+
+                doc.includes.push(dir);
+            }
             "config" => {
                 for child in child.children() {
                     match child.tag_name().name() {
@@ -34,6 +77,7 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
                                 }
                             }
                         }
+                        "blank" => todo!("blank"),
                         _ => {}
                     }
                 }
