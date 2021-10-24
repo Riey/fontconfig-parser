@@ -1,5 +1,4 @@
 use fontconfig_parser::*;
-use pretty_assertions::assert_eq;
 
 #[test]
 fn scale_10() {
@@ -8,85 +7,140 @@ fn scale_10() {
     ))
     .unwrap();
 
-    dbg!(&doc);
-
-    assert_eq!(doc.description, "Bitmap scaling");
-    assert_eq!(
-        doc.matches[0],
-        Match {
-            target: MatchTarget::Font,
-            tests: vec![Test {
-                target: TestTarget::default(),
-                qual: TestQual::default(),
-                compare: TestCompare::Eq,
-                value: Property::Outline(Value::Bool(false).into()),
-            },],
-            edits: vec![Edit {
-                mode: EditMode::Assign,
-                binding: EditBinding::default(),
-                value: Property::PixelSizeFixupFactor(Expression::List(
-                    ListOp::Divide,
-                    vec![
-                        Value::Property(PropertyTarget::Pattern, PropertyKind::PixelSize).into(),
-                        Value::Property(PropertyTarget::Font, PropertyKind::PixelSize).into(),
-                    ]
-                )),
-            }],
-        }
-    );
-
-    assert_eq!(
-        doc.matches[1],
-        Match {
-            target: MatchTarget::Font,
-            tests: vec![
-                Test {
+    let expected = Document {
+        description: "Bitmap scaling".into(),
+        matches: vec![
+            Match {
+                target: MatchTarget::Font,
+                tests: vec![Test {
+                    target: TestTarget::default(),
+                    qual: TestQual::default(),
                     compare: TestCompare::Eq,
-                    value: Property::Outline(Value::Bool(false).into()),
-                    ..Default::default()
-                },
-                Test {
+                    value: Property::Outline(false.into()),
+                }],
+                edits: vec![Edit {
+                    mode: EditMode::Assign,
+                    binding: EditBinding::default(),
+                    value: Property::PixelSizeFixupFactor(Expression::List(
+                        ListOp::Divide,
+                        vec![
+                            (PropertyTarget::Pattern, PropertyKind::PixelSize).into(),
+                            (PropertyTarget::Font, PropertyKind::PixelSize).into(),
+                        ],
+                    )),
+                }],
+            },
+            Match {
+                target: MatchTarget::Font,
+                tests: vec![
+                    Test {
+                        compare: TestCompare::Eq,
+                        value: Property::Outline(false.into()),
+                        ..Default::default()
+                    },
+                    Test {
+                        compare: TestCompare::Eq,
+                        value: Property::Scalable(false.into()),
+                        ..Default::default()
+                    },
+                    Test {
+                        compare: TestCompare::Eq,
+                        value: Property::Hinting(true.into()),
+                        ..Default::default()
+                    },
+                ],
+                edits: vec![Edit {
+                    binding: EditBinding::default(),
+                    mode: EditMode::Assign,
+                    value: Property::ScalingNotNeeded(Expression::List(
+                        ListOp::And,
+                        vec![
+                            Expression::Binary(
+                                BinaryOp::Less,
+                                vec![
+                                    (PropertyTarget::Default, PropertyKind::PixelSizeFixupFactor)
+                                        .into(),
+                                    1.2.into(),
+                                ],
+                            ),
+                            Expression::Binary(
+                                BinaryOp::More,
+                                vec![
+                                    (PropertyTarget::Default, PropertyKind::PixelSizeFixupFactor)
+                                        .into(),
+                                    0.8.into(),
+                                ],
+                            ),
+                        ],
+                    )),
+                }],
+            },
+            Match {
+                target: MatchTarget::Font,
+                tests: vec![Test {
+                    qual: TestQual::Any,
+                    target: TestTarget::Default,
                     compare: TestCompare::Eq,
-                    value: Property::Scalable(Value::Bool(false).into()),
-                    ..Default::default()
-                },
-                Test {
-                    compare: TestCompare::Eq,
-                    value: Property::Hinting(Value::Bool(true).into()),
-                    ..Default::default()
-                },
-            ],
-            edits: vec![Edit {
-                binding: EditBinding::default(),
-                mode: EditMode::Assign,
-                value: Property::ScalingNotNeeded(Expression::List(
-                    ListOp::And,
-                    vec![
-                        Expression::Binary(
-                            BinaryOp::Less,
+                    value: Property::ScalingNotNeeded(true.into()),
+                }],
+                edits: vec![Edit {
+                    mode: EditMode::Assign,
+                    binding: EditBinding::Weak,
+                    value: Property::PixelSizeFixupFactor(1.0.into()),
+                }],
+            },
+            Match {
+                target: MatchTarget::Font,
+                tests: vec![
+                    Test {
+                        qual: TestQual::Any,
+                        target: TestTarget::Default,
+                        compare: TestCompare::Eq,
+                        value: Property::Outline(false.into()),
+                    },
+                    Test {
+                        qual: TestQual::Any,
+                        target: TestTarget::Default,
+                        compare: TestCompare::NotEq,
+                        value: Property::PixelSizeFixupFactor(1.0.into()),
+                    },
+                ],
+                edits: vec![
+                    Edit {
+                        mode: EditMode::Assign,
+                        binding: EditBinding::Weak,
+                        value: Property::Matrix(Expression::List(
+                            ListOp::Times,
                             vec![
-                                Value::Property(
-                                    PropertyTarget::Default,
-                                    PropertyKind::PixelSizeFixupFactor
-                                )
-                                .into(),
-                                Value::Double(1.2).into(),
+                                (PropertyTarget::Default, PropertyKind::Matrix).into(),
+                                Expression::Matrix(vec![
+                                    (PropertyTarget::Default, PropertyKind::PixelSizeFixupFactor)
+                                        .into(),
+                                    0.0.into(),
+                                    0.0.into(),
+                                    (PropertyTarget::Default, PropertyKind::PixelSizeFixupFactor)
+                                        .into(),
+                                ]),
                             ],
-                        ),
-                        Expression::Binary(
-                            BinaryOp::More,
+                        )),
+                    },
+                    Edit {
+                        mode: EditMode::Assign,
+                        binding: EditBinding::Weak,
+                        value: Property::Size(Expression::List(
+                            ListOp::Divide,
                             vec![
-                                Value::Property(
-                                    PropertyTarget::Default,
-                                    PropertyKind::PixelSizeFixupFactor
-                                )
-                                .into(),
-                                Value::Double(0.8).into(),
+                                (PropertyTarget::Default, PropertyKind::Size).into(),
+                                (PropertyTarget::Default, PropertyKind::PixelSizeFixupFactor)
+                                    .into(),
                             ],
-                        ),
-                    ],
-                ))
-            }]
-        },
-    );
+                        )),
+                    },
+                ],
+            },
+        ],
+        ..Default::default()
+    };
+
+    k9::assert_equal!(doc, expected);
 }

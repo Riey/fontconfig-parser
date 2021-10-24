@@ -1,12 +1,3 @@
-macro_rules! try_opt {
-    ($opt:expr, $($tt:tt)*) => {
-        match $opt {
-            Some(t) => t,
-            None => return Err(crate::Error::UnexpectedEof(format!($($tt)*))),
-        }
-    };
-}
-
 macro_rules! try_text {
 	($node:expr) => {
         match $node.text() {
@@ -28,30 +19,6 @@ macro_rules! parse_attrs {
                         $str_key => $str_lvalue = attr.value().into(),
                     )+
                 )?
-                _ => {}
-            }
-        }
-    };
-}
-
-macro_rules! take_while_end {
-    ($tokens:expr, $tag:expr) => {
-        let mut depth = 1;
-        loop {
-            match try_opt!($tokens.next(), "Expect: {}", $tag)? {
-                Token::ElementStart { local, .. } if local.as_str() == $tag => {
-                    depth += 1;
-                }
-                Token::ElementEnd {
-                    end: ElementEnd::Close(_, e),
-                    ..
-                } if e.as_str() == $tag => {
-                    depth -= 1;
-
-                    if depth == 0 {
-                        break;
-                    }
-                }
                 _ => {}
             }
         }

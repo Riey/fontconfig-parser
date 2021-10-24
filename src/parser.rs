@@ -84,7 +84,7 @@ fn parse_expr(node: Node) -> Result<Expression> {
         "double" => return Ok(Value::Double(try_text!(node).parse()?).into()),
         "int" => return Ok(Value::Int(try_text!(node).parse()?).into()),
         "bool" => return Ok(Value::Bool(try_text!(node).parse()?).into()),
-        "const" => return Ok(Value::Const(try_text!(node).parse()?).into()),
+        "const" => return Ok(Value::Constant(try_text!(node).parse()?).into()),
         "matrix" => {
             let list = node
                 .children()

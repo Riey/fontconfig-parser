@@ -89,12 +89,6 @@ pub enum Expression {
     Matrix(Vec<Self>),
 }
 
-impl From<Value> for Expression {
-    fn from(v: Value) -> Self {
-        Expression::Simple(v)
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub enum PropertyTarget {
     Default,
@@ -124,7 +118,7 @@ pub enum Value {
     Double(Double),
     /// <string>str</string>
     String(String),
-    Const(Constant),
+    Constant(Constant),
     /// <bool>false</bool>
     Bool(Bool),
     Range(Int, Int),
@@ -135,4 +129,40 @@ pub enum Value {
     Prefer(Vec<String>),
     Accept(Vec<String>),
     Default(Vec<String>),
+}
+
+macro_rules! from_value {
+	($($name:ident,)+) => {
+        $(
+            impl From<$name> for Value {
+                fn from(v: $name) -> Value {
+                    Value::$name(v)
+                }
+            }
+        )+
+	};
+}
+
+from_value! {
+    Int,
+    Bool,
+    Double,
+    String,
+    Constant,
+    CharSet,
+}
+
+impl From<(PropertyTarget, PropertyKind)> for Value {
+    fn from((target, kind): (PropertyTarget, PropertyKind)) -> Self {
+        Value::Property(target, kind)
+    }
+}
+
+impl<V> From<V> for Expression
+where
+    Value: From<V>,
+{
+    fn from(v: V) -> Self {
+        Expression::Simple(Value::from(v))
+    }
 }

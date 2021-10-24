@@ -3,7 +3,7 @@ use crate::{CacheDir, Config, Dir, Include, Match, SelectFont};
 use alloc::vec::Vec;
 
 /// <https://www.freedesktop.org/software/fontconfig/fontconfig-user.html>
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Document {
     pub description: String,
     pub select_fonts: Vec<SelectFont>,

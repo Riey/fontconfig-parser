@@ -1,27 +1,27 @@
 #[cfg(not(feature = "std"))]
 use alloc::string::String;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Dir {
     pub prefix: DirPrefix,
     pub salt: String,
     pub path: String,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct CacheDir {
     pub prefix: DirPrefix,
     pub path: String,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Include {
     pub prefix: DirPrefix,
     pub ignore_missing: bool,
     pub path: String,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DirPrefix {
     Default,
     Cwd,
