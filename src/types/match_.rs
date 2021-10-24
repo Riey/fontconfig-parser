@@ -6,14 +6,14 @@ pub use self::test::*;
 #[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 
-#[derive(Clone, Debug, Default)]
-pub struct Match<'a> {
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Match {
     pub target: MatchTarget,
-    pub tests: Vec<Test<'a>>,
-    pub edits: Vec<Edit<'a>>,
+    pub tests: Vec<Test>,
+    pub edits: Vec<Edit>,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MatchTarget {
     Pattern,
     Font,

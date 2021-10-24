@@ -1,21 +1,24 @@
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
+
 #[derive(Clone, Debug, Default)]
-pub struct Dir<'a> {
+pub struct Dir {
     pub prefix: DirPrefix,
-    pub salt: &'a str,
-    pub path: &'a str,
+    pub salt: String,
+    pub path: String,
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct CacheDir<'a> {
+pub struct CacheDir {
     pub prefix: DirPrefix,
-    pub path: &'a str,
+    pub path: String,
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct Include<'a> {
+pub struct Include {
     pub prefix: DirPrefix,
     pub ignore_missing: bool,
-    pub path: &'a str,
+    pub path: String,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -42,7 +45,7 @@ impl Default for DirPrefix {
 
 macro_rules! define_calculate_path {
     ($ty:ident, $xdg_env:expr, $xdg_fallback:expr) => {
-        impl<'a> $ty<'a> {
+        impl $ty {
             /// Environment variable name which used `xdg` prefix
             pub const XDG_ENV: &'static str = $xdg_env;
             /// Fallback path when `XDG_ENV` is not exists
@@ -55,13 +58,13 @@ macro_rules! define_calculate_path {
                 config_file_path: &P,
             ) -> std::path::PathBuf {
                 match self.prefix {
-                    DirPrefix::Default => self.path.into(),
-                    DirPrefix::Cwd => std::path::Path::new(".").join(self.path),
-                    DirPrefix::Relative => config_file_path.as_ref().join(self.path),
+                    DirPrefix::Default => self.path.clone().into(),
+                    DirPrefix::Cwd => std::path::Path::new(".").join(&self.path),
+                    DirPrefix::Relative => config_file_path.as_ref().join(&self.path),
                     DirPrefix::Xdg => std::path::PathBuf::from(
                         std::env::var($xdg_env).unwrap_or_else(|_| $xdg_fallback.into()),
                     )
-                    .join(self.path),
+                    .join(&self.path),
                 }
             }
         }

@@ -2,6 +2,8 @@ use crate::{Constant, PropertyKind};
 #[cfg(not(feature = "std"))]
 use alloc::boxed::Box;
 #[cfg(not(feature = "std"))]
+use alloc::string::String;
+#[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 
 pub type Bool = bool;
@@ -78,34 +80,59 @@ parse_enum! {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Expression<'a> {
-    Simple(Value<'a>),
-    Unary(Box<Self>, UnaryOp),
-    Binary(Box<Self>, Box<Self>, BinaryOp),
-    Ternary(Box<Self>, Box<Self>, Box<Self>, TernaryOp),
-    List(Vec<Self>, ListOp),
+pub enum Expression {
+    Simple(Value),
+    Unary(UnaryOp, Vec<Self>),
+    Binary(BinaryOp, Vec<Self>),
+    Ternary(TernaryOp, Vec<Self>),
+    List(ListOp, Vec<Self>),
+    Matrix(Vec<Self>),
 }
 
-impl<'a> From<Value<'a>> for Expression<'a> {
-    fn from(v: Value<'a>) -> Self {
+impl From<Value> for Expression {
+    fn from(v: Value) -> Self {
         Expression::Simple(v)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum PropertyTarget {
+    Default,
+    Font,
+    Pattern,
+}
+
+parse_enum! {
+    PropertyTarget,
+    (Default, "default"),
+    (Font, "font"),
+    (Pattern, "pattern"),
+}
+
+impl Default for PropertyTarget {
+    fn default() -> Self {
+        PropertyTarget::Default
     }
 }
 
 /// Runtime typed fontconfig value
 #[derive(Clone, Debug, PartialEq)]
-pub enum Value<'a> {
+pub enum Value {
+    /// <int>0</int>
     Int(Int),
+    /// <double>1.5</double>
     Double(Double),
-    String(&'a str),
+    /// <string>str</string>
+    String(String),
     Const(Constant),
+    /// <bool>false</bool>
     Bool(Bool),
-    Matrix([Double; 4]),
     Range(Int, Int),
     CharSet(CharSet),
-    Property(PropertyKind),
+    /// <name target="font">pixelsize</name>
+    Property(PropertyTarget, PropertyKind),
 
-    Prefer(Vec<&'a str>),
-    Accept(Vec<&'a str>),
-    Default(Vec<&'a str>),
+    Prefer(Vec<String>),
+    Accept(Vec<String>),
+    Default(Vec<String>),
 }

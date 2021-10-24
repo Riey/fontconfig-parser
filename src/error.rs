@@ -7,7 +7,7 @@ use core::str::ParseBoolError;
 
 #[derive(Debug)]
 pub enum Error {
-    Xml(xmlparser::Error),
+    Xml(roxmltree::Error),
     UnexpectedEof(String),
     UnmatchedDocType,
     NoFontconfig,
@@ -27,8 +27,8 @@ impl From<std::io::Error> for Error {
     }
 }
 
-impl From<xmlparser::Error> for Error {
-    fn from(e: xmlparser::Error) -> Self {
+impl From<roxmltree::Error> for Error {
+    fn from(e: roxmltree::Error) -> Self {
         Self::Xml(e)
     }
 }

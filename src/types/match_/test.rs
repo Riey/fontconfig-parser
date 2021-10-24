@@ -7,15 +7,15 @@ use crate::Property;
 /// if 'ignore-blanks' is set "true", any blanks in the string will be ignored on its comparison. this takes effects only when compare="eq" or compare="not_eq".
 /// When used in a <match target="font"> element, the target= attribute in the <test> element selects between matching the original pattern or the font.
 /// "default" selects whichever target the outer <match> element has selected.
-#[derive(Clone, Debug, Default)]
-pub struct Test<'a> {
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Test {
     pub qual: TestQual,
     pub target: TestTarget,
     pub compare: TestCompare,
-    pub value: Property<'a>,
+    pub value: Property,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TestTarget {
     Default,
     Pattern,
@@ -37,7 +37,7 @@ impl Default for TestTarget {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TestCompare {
     Eq,
     NotEq,
@@ -67,7 +67,7 @@ impl Default for TestCompare {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TestQual {
     Any,
     All,

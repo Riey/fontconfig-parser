@@ -1,13 +1,13 @@
 use crate::Property;
 
-#[derive(Clone, Debug, Default)]
-pub struct Edit<'a> {
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Edit {
     pub mode: EditMode,
     pub binding: EditBinding,
-    pub value: Property<'a>,
+    pub value: Property,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum EditBinding {
     Strong,
     Weak,
@@ -27,7 +27,7 @@ impl Default for EditBinding {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum EditMode {
     Assign,
     AssignReplace,

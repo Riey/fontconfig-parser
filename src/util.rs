@@ -2,50 +2,35 @@ macro_rules! try_opt {
     ($opt:expr, $($tt:tt)*) => {
         match $opt {
             Some(t) => t,
-            None => Err(crate::Error::UnexpectedEof(format!($($tt)*))),
+            None => return Err(crate::Error::UnexpectedEof(format!($($tt)*))),
         }
     };
 }
 
-macro_rules! parse_attrs {
-    ($tokens:expr, { $($key:expr => $lvalue:expr,)+ } $(, { $($str_key:expr => $str_lvalue:expr,)+ } )?) => {
-        for attr in take_attrs!($tokens) {
-            let (key, value) = attr?;
+macro_rules! try_text {
+	($node:expr) => {
+        match $node.text() {
+            Some(t) => t,
+            None => return Err(crate::Error::InvalidFormat),
+        }
+	};
+}
 
-            match key {
+macro_rules! parse_attrs {
+    ($node:expr, { $($key:expr => $lvalue:expr,)+ } $(, { $($str_key:expr => $str_lvalue:expr,)+ } )?) => {
+        for attr in $node.attributes() {
+            match attr.name() {
                 $(
-                    $key => $lvalue = value.parse()?,
+                    $key => $lvalue = attr.value().parse()?,
                 )+
                 $(
                     $(
-                        $str_key => $str_lvalue = value,
+                        $str_key => $str_lvalue = attr.value().into(),
                     )+
                 )?
                 _ => {}
             }
         }
-    };
-}
-
-macro_rules! take_attrs {
-    ($tokens:expr) => {
-        $tokens
-            .take_while(|t| {
-                !matches!(
-                    t,
-                    Ok(Token::ElementEnd {
-                        end: ElementEnd::Open,
-                        ..
-                    })
-                )
-            })
-            .filter_map(|t| match t {
-                Ok(Token::Attribute { local, value, .. }) => {
-                    Some(Ok((local.as_str(), value.as_str())))
-                }
-                Ok(_) => None,
-                Err(err) => Some(Err(err)),
-            })
     };
 }
 

@@ -31,20 +31,9 @@ pub use crate::error::Error;
 pub use crate::types::*;
 
 pub fn parse_document_from_str(s: &str) -> Result<Document> {
-    crate::parser::parse_document(
-        &mut xmlparser::Tokenizer::from(s)
-            .into_iter()
-            .map(|r| r.map_err(Into::into)),
-    )
+    crate::parser::parse_document(&roxmltree::Document::parse(s)?)
 }
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn it_works() {
-        crate::parse_document_from_str(include_str!(
-            "../test-conf/conf.d/10-scale-bitmap-fonts.conf"
-        ))
-        .unwrap();
-    }
 }
