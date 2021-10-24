@@ -24,6 +24,36 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
                     .map(String::from)
                     .unwrap_or_default();
             }
+            "alias" => {
+                let mut alias = Alias::default();
+
+                for child in child.children() {
+                    let families = child
+                        .children()
+                        .filter_map(|family| match family.tag_name().name() {
+                            "family" => family.text().map(Into::into),
+                            _ => None,
+                        });
+
+                    match child.tag_name().name() {
+                        "family" => {
+                            alias.alias = try_text!(child).into();
+                        }
+                        "prefer" => {
+                            alias.prefer.extend(families);
+                        }
+                        "accept" => {
+                            alias.accept.extend(families);
+                        }
+                        "default" => {
+                            alias.default.extend(families);
+                        }
+                        _ => {}
+                    }
+                }
+
+                doc.aliases.push(alias);
+            }
             "dir" => {
                 let mut dir = Dir::default();
 
