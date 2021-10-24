@@ -24,6 +24,20 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
                     .map(String::from)
                     .unwrap_or_default();
             }
+            "config" => {
+                for child in child.children() {
+                    match child.tag_name().name() {
+                        "rescan" => {
+                            if let Some(int) = child.first_element_child() {
+                                if int.tag_name().name() == "int" {
+                                    doc.config.rescans.push(try_text!(int).parse()?);
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
             "match" => {
                 let mut m = Match::default();
 
