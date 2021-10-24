@@ -142,5 +142,5 @@ fn scale_10() {
         ..Default::default()
     };
 
-    k9::assert_equal!(doc, expected);
+    k9::assert_equal!(expected, doc);
 }
