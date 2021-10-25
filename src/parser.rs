@@ -306,63 +306,68 @@ fn get_texts<'a>(node: &'a Node) -> impl Iterator<Item = &'a str> {
         .filter_map(|n| if n.is_element() { n.text() } else { None })
 }
 
-macro_rules! make_parse_failed_test {
-    ($name:ident, $test_fn:ident, $text:expr,) => {
-        #[test]
-        #[should_panic]
-        fn $name() {
-            let doc = XmlDocument::parse($text).expect("Parsing xml");
-            let node = doc.root_element();
-            $test_fn(node).expect("Run parse");
-        }
-    };
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    macro_rules! make_parse_failed_test {
+        ($name:ident, $test_fn:ident, $text:expr,) => {
+            #[test]
+            #[should_panic]
+            fn $name() {
+                let doc = XmlDocument::parse($text).expect("Parsing xml");
+                let node = doc.root_element();
+                $test_fn(node).expect("Run parse");
+            }
+        };
+    }
+
+    macro_rules! make_parse_test {
+        ($name:ident, $test_fn:ident, $text:expr, $value:expr,) => {
+            #[test]
+            fn $name() {
+                let doc = XmlDocument::parse($text).expect("Parsing xml");
+                let node = doc.root_element();
+                let ret = $test_fn(node).expect("Run parse");
+                let expected = $value;
+                k9::assert_equal!(expected, ret);
+            }
+        };
+    }
+
+    make_parse_test!(
+        test_parse_charset,
+        parse_expr,
+        "<charset><range><int>0</int><int>123</int></range></charset>",
+        Expression::from(vec![IntOrRange::Range(0, 123)]),
+    );
+
+    make_parse_test!(
+        test_parse_int,
+        parse_expr,
+        "<int>123</int>",
+        Expression::from(123),
+    );
+
+    make_parse_failed_test!(test_parse_invalid_int, parse_expr, "<int>123f</int>",);
+
+    make_parse_test!(
+        test_parse_range,
+        parse_expr,
+        "<range><int>0</int><int>10</int></range>",
+        Expression::from(Value::Range(0, 10)),
+    );
+
+    make_parse_failed_test!(
+        test_parse_invalid_range,
+        parse_expr,
+        "<range>0<int>10</int></range>",
+    );
+
+    make_parse_test!(
+        test_langset,
+        parse_expr,
+        "<langset>ko-KR</langset>",
+        Expression::from(Value::LangSet("ko-KR".into())),
+    );
 }
-
-macro_rules! make_parse_test {
-    ($name:ident, $test_fn:ident, $text:expr, $value:expr,) => {
-        #[test]
-        fn $name() {
-            let doc = XmlDocument::parse($text).expect("Parsing xml");
-            let node = doc.root_element();
-            let ret = $test_fn(node).expect("Run parse");
-            let expected = $value;
-            k9::assert_equal!(expected, ret);
-        }
-    };
-}
-
-make_parse_test!(
-    test_parse_charset,
-    parse_expr,
-    "<charset><range><int>0</int><int>123</int></range></charset>",
-    Expression::from(vec![IntOrRange::Range(0, 123)]),
-);
-
-make_parse_test!(
-    test_parse_int,
-    parse_expr,
-    "<int>123</int>",
-    Expression::from(123),
-);
-
-make_parse_failed_test!(test_parse_invalid_int, parse_expr, "<int>123f</int>",);
-
-make_parse_test!(
-    test_parse_range,
-    parse_expr,
-    "<range><int>0</int><int>10</int></range>",
-    Expression::from(Value::Range(0, 10)),
-);
-
-make_parse_failed_test!(
-    test_parse_invalid_range,
-    parse_expr,
-    "<range>0<int>10</int></range>",
-);
-
-make_parse_test!(
-    test_langset,
-    parse_expr,
-    "<langset>ko-KR</langset>",
-    Expression::from(Value::LangSet("ko-KR".into())),
-);
