@@ -228,6 +228,7 @@ fn parse_expr(node: Node) -> Result<Expression> {
 
     match node.tag_name().name() {
         "string" => return Ok(Value::String(try_text!(node).into()).into()),
+        "langset" => return Ok(Value::LangSet(try_text!(node).into()).into()),
         "double" => return Ok(Value::Double(try_text!(node).parse()?).into()),
         "int" => return Ok(Value::Int(try_text!(node).parse()?).into()),
         "bool" => return Ok(Value::Bool(try_text!(node).parse()?).into()),
@@ -355,4 +356,11 @@ make_parse_failed_test!(
     test_parse_invalid_range,
     parse_expr,
     "<range>0<int>10</int></range>",
+);
+
+make_parse_test!(
+    test_langset,
+    parse_expr,
+    "<langset>ko-KR</langset>",
+    Expression::from(Value::LangSet("ko-KR".into())),
 );
