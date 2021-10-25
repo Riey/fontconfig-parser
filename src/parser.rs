@@ -108,7 +108,11 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
                                 }
                             }
                         }
-                        "blank" => {}
+                        "blank" => {
+                            if let Some(child) = child.first_element_child() {
+                                doc.config.blanks.push(parse_int_or_range(child)?);
+                            }
+                        }
                         _ => {}
                     }
                 }
