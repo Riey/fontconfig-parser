@@ -21,6 +21,7 @@ pub struct Include {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct RemapDir {
     pub prefix: DirPrefix,
+    pub as_path: String,
     pub salt: String,
     pub path: String,
 }

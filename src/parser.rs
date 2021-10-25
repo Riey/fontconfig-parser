@@ -69,6 +69,21 @@ fn parse_config_part(child: Node) -> Result<Option<ConfigPart>> {
 
             ConfigPart::Dir(dir)
         }
+        "reset-dirs" => ConfigPart::ResetDirs,
+        "remap-dir" => {
+            let mut dir = RemapDir::default();
+
+            parse_attrs!(child, {
+                "prefix" => dir.prefix,
+            }, {
+                "salt" => dir.salt,
+                "as-path" => dir.as_path,
+            });
+
+            dir.path = try_text!(child).into();
+
+            ConfigPart::RemapDir(dir)
+        }
         "cachedir" => {
             let mut dir = CacheDir::default();
 
