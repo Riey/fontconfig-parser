@@ -208,17 +208,22 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
     Ok(doc)
 }
 
+fn parse_int_or_range(node: Node) -> Result<IntOrRange> {
+    let mut texts = get_texts(&node);
+
+    match node.tag_name().name() {
+        "int" => Ok(IntOrRange::Int(try_text!(node).parse()?)),
+        "range" => Ok(IntOrRange::Range(
+            try_next!(texts, "Expect int").parse()?,
+            try_next!(texts, "Expect int").parse()?,
+        )),
+        _ => Err(Error::InvalidFormat(format!("Expect IntOrRange"))),
+    }
+}
+
 fn parse_expr(node: Node) -> Result<Expression> {
-    let mut texts = node
-        .children()
-        .filter_map(|n| if n.is_element() { n.text() } else { None });
-    let mut exprs = node.children().filter_map(|n| {
-        if n.is_element() {
-            Some(parse_expr(n))
-        } else {
-            None
-        }
-    });
+    let mut exprs = get_exprs(&node);
+    let mut texts = get_texts(&node);
 
     macro_rules! next {
         ($iter:expr) => {
@@ -242,28 +247,10 @@ fn parse_expr(node: Node) -> Result<Expression> {
             ])));
         }
         "charset" => {
-            let mut charset = Vec::new();
-
-            for child in node.children() {
-                match child.tag_name().name() {
-                    "int" => charset.push(CharSetElement::Int(try_text!(child).parse()?)),
-                    "range" => {
-                        let mut terms = child.children().filter_map(|c| {
-                            if c.is_element() {
-                                c.text()
-                            } else {
-                                None
-                            }
-                        });
-
-                        charset.push(CharSetElement::Range(
-                            next!(terms).parse()?,
-                            next!(terms).parse()?,
-                        ));
-                    }
-                    _ => {}
-                }
-            }
+            let charset = node
+                .children()
+                .filter_map(|c| parse_int_or_range(c).ok())
+                .collect();
 
             return Ok(Value::CharSet(charset).into());
         }
@@ -304,6 +291,21 @@ fn parse_expr(node: Node) -> Result<Expression> {
     }
 }
 
+fn get_exprs<'a>(node: &'a Node) -> impl Iterator<Item = Result<Expression>> + 'a {
+    node.children().filter_map(|n| {
+        if n.is_element() {
+            Some(parse_expr(n))
+        } else {
+            None
+        }
+    })
+}
+
+fn get_texts<'a>(node: &'a Node) -> impl Iterator<Item = &'a str> {
+    node.children()
+        .filter_map(|n| if n.is_element() { n.text() } else { None })
+}
+
 macro_rules! make_parse_failed_test {
     ($name:ident, $test_fn:ident, $text:expr,) => {
         #[test]
@@ -333,7 +335,7 @@ make_parse_test!(
     test_parse_charset,
     parse_expr,
     "<charset><range><int>0</int><int>123</int></range></charset>",
-    Expression::from(vec![CharSetElement::Range(0, 123)]),
+    Expression::from(vec![IntOrRange::Range(0, 123)]),
 );
 
 make_parse_test!(

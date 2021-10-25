@@ -1,4 +1,4 @@
-use crate::{Constant, PropertyKind};
+use crate::{Constant, IntOrRange, PropertyKind};
 #[cfg(not(feature = "std"))]
 use alloc::boxed::Box;
 #[cfg(not(feature = "std"))]
@@ -104,13 +104,7 @@ impl Default for PropertyTarget {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum CharSetElement {
-    Int(Int),
-    Range(Int, Int),
-}
-
-pub type CharSet = Vec<CharSetElement>;
+pub type CharSet = Vec<IntOrRange>;
 
 /// Runtime typed fontconfig value
 #[derive(Clone, Debug, PartialEq)]

@@ -16,3 +16,15 @@ pub struct Document {
     pub config: Config,
     pub aliases: Vec<Alias>,
 }
+
+/// Final config which processing after `include`
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct FontConfig {
+    pub select_fonts: Vec<SelectFont>,
+    pub dirs: Vec<Dir>,
+    pub cache_dirs: Vec<CacheDir>,
+    pub matches: Vec<Match>,
+    pub config: Config,
+    pub aliases: Vec<Alias>,
+}
+
