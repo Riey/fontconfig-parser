@@ -1,215 +1,220 @@
 use crate::*;
-use roxmltree::{Document as XmlDocument, Node};
+use roxmltree::Node;
 
-#[cfg(not(feature = "std"))]
-use alloc::boxed::Box;
-#[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
-
-pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
-    let mut doc = Document::default();
-
+pub fn parse_config<'a>(
+    xml_doc: &'a roxmltree::Document,
+) -> Result<impl Iterator<Item = Result<ConfigPart>> + 'a> {
     let fontconfig = xml_doc.root_element();
 
     if fontconfig.tag_name().name() != "fontconfig" {
         return Err(Error::NoFontconfig);
     }
 
-    for child in fontconfig.children().filter(|c| c.is_element()) {
-        match child.tag_name().name() {
-            "description" => {
-                doc.description = child
-                    .first_child()
-                    .and_then(|c| c.text())
-                    .map(Into::into)
-                    .unwrap_or_default();
+    Ok(fontconfig
+        .children()
+        .filter(|c| c.is_element())
+        .filter_map(|c| {
+            if c.is_element() {
+                parse_config_part(c).transpose()
+            } else {
+                None
             }
-            "alias" => {
-                let mut alias = Alias::default();
+        }))
+}
 
-                for child in child.children() {
-                    let families =
-                        child
-                            .children()
-                            .filter_map(|family| match family.tag_name().name() {
-                                "family" => family.text().map(Into::into),
-                                _ => None,
-                            });
+fn parse_config_part(child: Node) -> Result<Option<ConfigPart>> {
+    let part = match child.tag_name().name() {
+        "description" => ConfigPart::Description(try_text!(child).into()),
+        "alias" => {
+            let mut alias = Alias::default();
 
-                    match child.tag_name().name() {
-                        "family" => {
-                            alias.alias = try_text!(child).into();
-                        }
-                        "prefer" => {
-                            alias.prefer.extend(families);
-                        }
-                        "accept" => {
-                            alias.accept.extend(families);
-                        }
-                        "default" => {
-                            alias.default.extend(families);
-                        }
-                        _ => {}
+            for child in child.children() {
+                let families =
+                    child
+                        .children()
+                        .filter_map(|family| match family.tag_name().name() {
+                            "family" => family.text().map(Into::into),
+                            _ => None,
+                        });
+
+                match child.tag_name().name() {
+                    "family" => {
+                        alias.alias = try_text!(child).into();
                     }
-                }
-
-                doc.aliases.push(alias);
-            }
-            "dir" => {
-                let mut dir = Dir::default();
-
-                parse_attrs!(child, {
-                    "prefix" => dir.prefix,
-                }, {
-                    "salt" => dir.salt,
-                });
-
-                dir.path = try_text!(child).into();
-
-                doc.dirs.push(dir);
-            }
-            "cachedir" => {
-                let mut dir = CacheDir::default();
-
-                parse_attrs!(child, {
-                    "prefix" => dir.prefix,
-                });
-
-                dir.path = try_text!(child).into();
-
-                doc.cache_dirs.push(dir);
-            }
-            "include" => {
-                let mut dir = Include::default();
-                let mut ignore_missing = "";
-
-                parse_attrs!(child, {
-                    "prefix" => dir.prefix,
-                }, {
-                    "ignore_missing" => ignore_missing,
-                });
-
-                dir.ignore_missing = match ignore_missing {
-                    "yes" => true,
-                    _ => false,
-                };
-
-                dir.path = try_text!(child).into();
-
-                doc.includes.push(dir);
-            }
-            "config" => {
-                for child in child.children() {
-                    match child.tag_name().name() {
-                        "rescan" => {
-                            if let Some(int) = child.first_element_child() {
-                                if int.tag_name().name() == "int" {
-                                    doc.config.rescans.push(try_text!(int).parse()?);
-                                }
-                            }
-                        }
-                        "blank" => {
-                            if let Some(child) = child.first_element_child() {
-                                doc.config.blanks.push(parse_int_or_range(child)?);
-                            }
-                        }
-                        _ => {}
+                    "prefer" => {
+                        alias.prefer.extend(families);
                     }
+                    "accept" => {
+                        alias.accept.extend(families);
+                    }
+                    "default" => {
+                        alias.default.extend(families);
+                    }
+                    _ => {}
                 }
             }
-            "selectfont" => {
-                let mut s = SelectFont::default();
 
-                for child in child.children() {
-                    let matches = child.children().filter_map(|c| match c.tag_name().name() {
-                        "pattern" => {
-                            let patelts = c.children().filter_map(|patelt| {
-                                if patelt.tag_name().name() == "patelt" {
-                                    let mut kind = PropertyKind::default();
-                                    parse_attrs_opt!(patelt, {
-                                        "name" => kind,
-                                    });
-                                    parse_expr(patelt.first_element_child()?)
-                                        .ok()
-                                        .map(|expr| kind.make_property(expr))
-                                } else {
-                                    None
-                                }
-                            });
-                            Some(FontMatch::Pattern(patelts.collect()))
-                        }
-                        "glob" => c.text().map(Into::into).map(FontMatch::Glob),
-                        _ => None,
-                    });
-
-                    match child.tag_name().name() {
-                        "acceptfont" => {
-                            s.accepts.extend(matches);
-                        }
-                        "rejectfont" => {
-                            s.rejects.extend(matches);
-                        }
-                        _ => {}
-                    }
-                }
-
-                doc.select_fonts.push(s);
-            }
-            "match" => {
-                let mut m = Match::default();
-
-                parse_attrs!(child, {
-                    "target" => m.target,
-                });
-
-                for child in child.children() {
-                    match child.tag_name().name() {
-                        "test" => {
-                            let mut t = Test::default();
-                            let mut kind = PropertyKind::default();
-
-                            parse_attrs!(child, {
-                                "name" => kind,
-                                "qual" => t.qual,
-                                "target" => t.target,
-                                "compare" => t.compare,
-                            });
-
-                            t.value = kind
-                                .make_property(parse_expr(child.first_element_child().unwrap())?);
-
-                            m.tests.push(t);
-                        }
-
-                        "edit" => {
-                            let mut e = Edit::default();
-                            let mut kind = PropertyKind::default();
-
-                            parse_attrs!(child, {
-                                "name" => kind,
-                                "mode" => e.mode,
-                                "binding" => e.binding,
-                            });
-
-                            e.value = kind
-                                .make_property(parse_expr(child.first_element_child().unwrap())?);
-
-                            m.edits.push(e);
-                        }
-                        _ => {}
-                    }
-                }
-
-                doc.matches.push(m);
-            }
-            _ => {
-                #[cfg(feature = "std")]
-                eprintln!("Ignore {:?}", child.tag_name());
-            }
+            ConfigPart::Alias(alias)
         }
-    }
+        "dir" => {
+            let mut dir = Dir::default();
 
-    Ok(doc)
+            parse_attrs!(child, {
+                "prefix" => dir.prefix,
+            }, {
+                "salt" => dir.salt,
+            });
+
+            dir.path = try_text!(child).into();
+
+            ConfigPart::Dir(dir)
+        }
+        "cachedir" => {
+            let mut dir = CacheDir::default();
+
+            parse_attrs!(child, {
+                "prefix" => dir.prefix,
+            });
+
+            dir.path = try_text!(child).into();
+
+            ConfigPart::CacheDir(dir)
+        }
+        "include" => {
+            let mut dir = Include::default();
+            let mut ignore_missing = "";
+
+            parse_attrs!(child, {
+                "prefix" => dir.prefix,
+            }, {
+                "ignore_missing" => ignore_missing,
+            });
+
+            dir.ignore_missing = match ignore_missing {
+                "yes" => true,
+                _ => false,
+            };
+
+            dir.path = try_text!(child).into();
+
+            ConfigPart::Include(dir)
+        }
+        "config" => {
+            let mut config = Config::default();
+
+            for child in child.children() {
+                match child.tag_name().name() {
+                    "rescan" => {
+                        if let Some(int) = child.first_element_child() {
+                            if int.tag_name().name() == "int" {
+                                config.rescans.push(try_text!(int).parse()?);
+                            }
+                        }
+                    }
+                    "blank" => {
+                        if let Some(child) = child.first_element_child() {
+                            config.blanks.push(parse_int_or_range(child)?);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            ConfigPart::Config(config)
+        }
+        "selectfont" => {
+            let mut s = SelectFont::default();
+
+            for child in child.children() {
+                let matches = child.children().filter_map(|c| match c.tag_name().name() {
+                    "pattern" => {
+                        let patelts = c.children().filter_map(|patelt| {
+                            if patelt.tag_name().name() == "patelt" {
+                                let mut kind = PropertyKind::default();
+                                parse_attrs_opt!(patelt, {
+                                    "name" => kind,
+                                });
+                                parse_expr(patelt.first_element_child()?)
+                                    .ok()
+                                    .map(|expr| kind.make_property(expr))
+                            } else {
+                                None
+                            }
+                        });
+                        Some(FontMatch::Pattern(patelts.collect()))
+                    }
+                    "glob" => c.text().map(Into::into).map(FontMatch::Glob),
+                    _ => None,
+                });
+
+                match child.tag_name().name() {
+                    "acceptfont" => {
+                        s.accepts.extend(matches);
+                    }
+                    "rejectfont" => {
+                        s.rejects.extend(matches);
+                    }
+                    _ => {}
+                }
+            }
+
+            ConfigPart::SelectFont(s)
+        }
+        "match" => {
+            let mut m = Match::default();
+
+            parse_attrs!(child, {
+                "target" => m.target,
+            });
+
+            for child in child.children() {
+                match child.tag_name().name() {
+                    "test" => {
+                        let mut t = Test::default();
+                        let mut kind = PropertyKind::default();
+
+                        parse_attrs!(child, {
+                            "name" => kind,
+                            "qual" => t.qual,
+                            "target" => t.target,
+                            "compare" => t.compare,
+                        });
+
+                        t.value =
+                            kind.make_property(parse_expr(child.first_element_child().unwrap())?);
+
+                        m.tests.push(t);
+                    }
+
+                    "edit" => {
+                        let mut e = Edit::default();
+                        let mut kind = PropertyKind::default();
+
+                        parse_attrs!(child, {
+                            "name" => kind,
+                            "mode" => e.mode,
+                            "binding" => e.binding,
+                        });
+
+                        e.value =
+                            kind.make_property(parse_expr(child.first_element_child().unwrap())?);
+
+                        m.edits.push(e);
+                    }
+                    _ => {}
+                }
+            }
+
+            ConfigPart::Match(m)
+        }
+        _ => {
+            #[cfg(feature = "std")]
+            eprintln!("Ignore {:?}", child.tag_name());
+            return Ok(None);
+        }
+    };
+
+    Ok(Some(part))
 }
 
 fn parse_int_or_range(node: Node) -> Result<IntOrRange> {
@@ -319,7 +324,7 @@ mod tests {
             #[test]
             #[should_panic]
             fn $name() {
-                let doc = XmlDocument::parse($text).expect("Parsing xml");
+                let doc = roxmltree::Document::parse($text).expect("Parsing xml");
                 let node = doc.root_element();
                 $test_fn(node).expect("Run parse");
             }
@@ -330,7 +335,7 @@ mod tests {
         ($name:ident, $test_fn:ident, $text:expr, $value:expr,) => {
             #[test]
             fn $name() {
-                let doc = XmlDocument::parse($text).expect("Parsing xml");
+                let doc = roxmltree::Document::parse($text).expect("Parsing xml");
                 let node = doc.root_element();
                 let ret = $test_fn(node).expect("Run parse");
                 let expected = $value;

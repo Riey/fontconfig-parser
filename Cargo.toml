@@ -8,15 +8,11 @@ description = "fontconfig file parser in pure Rust"
 repository = "https://github.com/Riey/fontconfig-parser"
 homepage = "https://github.com/Riey/fontconfig-parser"
 readme = "README.md"
-categories = ["parser-implementations", "no-std"]
+categories = ["parser-implementations"]
 keywords = ["fontconfig"]
 
-[features]
-default = ["std", "roxmltree/std"]
-std = []
-
 [dependencies]
-roxmltree = { version = "0.14.1", default-features = false }
+roxmltree = "0.14.1"
 
 [dev-dependencies]
 criterion = "0.3.5"

@@ -4,19 +4,13 @@
 //!
 //! # Example
 //!
-//! ```rust
-//! use fontconfig_parser::parse_document_from_str;
+//! ```no_run
+//! use fontconfig_parser::FontConfig;
 //!
-//! if let Ok(document_str) = std::fs::read_to_string("/etc/fonts/fonts.conf") {
-//!     let document = parse_document_from_str(&document_str).unwrap();
-//! }
+//! let mut config = FontConfig::default();
+//!
+//! config.merge_config("/etc/fonts/fonts.conf").unwrap();
 //! ```
-
-#![cfg_attr(not(feature = "std"), no_std)]
-
-#[cfg(not(feature = "std"))]
-#[macro_use]
-extern crate alloc;
 
 #[macro_use]
 mod util;
@@ -30,8 +24,11 @@ pub type Result<T> = core::result::Result<T, Error>;
 pub use crate::error::Error;
 pub use crate::types::*;
 
-pub fn parse_document_from_str(s: &str) -> Result<Document> {
-    crate::parser::parse_document(&roxmltree::Document::parse(s)?)
+/// Parse as raw config parts use this when you want custom handling config file
+/// 
+/// Otherwise, you may want [`FontConfig::merge_config`]
+pub fn parse_config_parts(s: &str) -> Result<Vec<ConfigPart>> {
+    crate::parser::parse_config(&roxmltree::Document::parse(s)?)?.collect()
 }
 
 #[cfg(test)]

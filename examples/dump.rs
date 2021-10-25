@@ -1,3 +1,5 @@
+use fontconfig_parser::FontConfig;
+
 fn main() {
     let args = std::env::args().collect::<Vec<_>>();
     if args.len() < 2 {
@@ -5,9 +7,8 @@ fn main() {
         return;
     }
 
-    let doc =
-        fontconfig_parser::parse_document_from_str(&std::fs::read_to_string(&args[1]).unwrap())
-            .unwrap();
+    let mut config = FontConfig::default();
+    config.merge_config(&args[1]).unwrap();
 
-    println!("{:#?}", doc);
+    println!("{:#?}", config);
 }

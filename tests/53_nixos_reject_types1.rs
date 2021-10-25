@@ -1,5 +1,6 @@
 use fontconfig_parser::*;
 
+/*
 #[test]
 fn nixos_reject_types1() {
     let doc = parse_document_from_str(include_str!(
@@ -19,3 +20,4 @@ fn nixos_reject_types1() {
 
     k9::assert_equal!(expected, doc);
 }
+*/

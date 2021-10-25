@@ -1,10 +1,4 @@
 use crate::{Constant, IntOrRange, PropertyKind};
-#[cfg(not(feature = "std"))]
-use alloc::boxed::Box;
-#[cfg(not(feature = "std"))]
-use alloc::string::String;
-#[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
 
 pub type Bool = bool;
 pub type Int = u32;

@@ -7,11 +7,11 @@ see <https://www.freedesktop.org/software/fontconfig/fontconfig-user.html> for m
 ## Example
 
 ```rust
-use fontconfig_parser::parse_document_from_str;
+use fontconfig_parser::FontConfig;
 
-if let Ok(document_str) = std::fs::read_to_string("/etc/fonts/fonts.conf") {
-    let document = parse_document_from_str(&document_str).unwrap();
-}
+let mut config = FontConfig::default();
+
+config.merge_config("/etc/fonts/fonts.conf").unwrap();
 ```
 
 License: MIT

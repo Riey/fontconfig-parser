@@ -1,23 +1,27 @@
-#[cfg(not(feature = "std"))]
-use alloc::string::String;
-
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Dir {
     pub prefix: DirPrefix,
     pub salt: String,
     pub path: String,
 }
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct CacheDir {
     pub prefix: DirPrefix,
     pub path: String,
 }
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Include {
     pub prefix: DirPrefix,
     pub ignore_missing: bool,
+    pub path: String,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct RemapDir {
+    pub prefix: DirPrefix,
+    pub salt: String,
     pub path: String,
 }
 
@@ -52,7 +56,6 @@ macro_rules! define_calculate_path {
             pub const XDG_FALLBACK_PATH: &'static str = $xdg_fallback;
 
             /// Calculate actual path
-            #[cfg(feature = "std")]
             pub fn calculate_path<P: AsRef<std::path::Path> + ?Sized>(
                 &self,
                 config_file_path: &P,

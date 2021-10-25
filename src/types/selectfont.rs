@@ -1,8 +1,4 @@
 use crate::Property;
-#[cfg(not(feature = "std"))]
-use alloc::string::String;
-#[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct SelectFont {

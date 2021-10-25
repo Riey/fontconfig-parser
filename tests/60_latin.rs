@@ -1,3 +1,5 @@
+/*
+
 use fontconfig_parser::*;
 
 #[test]
@@ -89,3 +91,5 @@ fn latin() {
 
     k9::assert_equal!(expected, doc);
 }
+
+*/
