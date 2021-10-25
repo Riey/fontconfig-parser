@@ -60,7 +60,10 @@ fn fonts() {
                 }],
             },
         ],
-        config: Config { rescans: vec![30], blanks: vec![] },
+        config: Config {
+            rescans: vec![30],
+            blanks: vec![IntOrRange::Int(0)],
+        },
         cache_dirs: vec![
             CacheDir {
                 prefix: DirPrefix::Xdg,
