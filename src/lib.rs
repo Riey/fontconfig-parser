@@ -25,7 +25,7 @@ pub use crate::error::Error;
 pub use crate::types::*;
 
 /// Parse as raw config parts use this when you want custom handling config file
-/// 
+///
 /// Otherwise, you may want [`FontConfig::merge_config`]
 pub fn parse_config_parts(s: &str) -> Result<Vec<ConfigPart>> {
     crate::parser::parse_config(&roxmltree::Document::parse(s)?)?.collect()

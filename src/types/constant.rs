@@ -7,6 +7,7 @@ macro_rules! define_constant {
         )+
     ) => {
         #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
         pub enum Constant {
             $(
                 $variant,

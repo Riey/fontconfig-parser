@@ -6,6 +6,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ConfigPart {
     Description(String),
     SelectFont(SelectFont),
@@ -20,6 +21,7 @@ pub enum ConfigPart {
 }
 
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FontConfig {
     pub select_fonts: Vec<SelectFont>,
     pub dirs: Vec<PathBuf>,

@@ -9,6 +9,8 @@ mod selectfont;
 mod value;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(untagged))]
 pub enum IntOrRange {
     Int(Int),
     Range(Int, Int),

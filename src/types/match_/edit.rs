@@ -1,6 +1,7 @@
 use crate::Property;
 
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Edit {
     pub mode: EditMode,
     pub binding: EditBinding,
@@ -8,6 +9,7 @@ pub struct Edit {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum EditBinding {
     Strong,
     Weak,
@@ -28,6 +30,7 @@ impl Default for EditBinding {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum EditMode {
     Assign,
     AssignReplace,

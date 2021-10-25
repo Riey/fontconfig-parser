@@ -5,6 +5,7 @@ pub type Int = u32;
 pub type Double = f64;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ListOp {
     Times,
     Divide,
@@ -25,6 +26,7 @@ parse_enum! {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum UnaryOp {
     Not,
 }
@@ -35,6 +37,7 @@ parse_enum! {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BinaryOp {
     Eq,
     NotEq,
@@ -59,6 +62,7 @@ parse_enum! {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum TernaryOp {
     If,
 }
@@ -69,6 +73,7 @@ parse_enum! {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Expression {
     Simple(Value),
     Unary(UnaryOp, Box<Self>),
@@ -79,6 +84,7 @@ pub enum Expression {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum PropertyTarget {
     Default,
     Font,
@@ -102,6 +108,7 @@ pub type CharSet = Vec<IntOrRange>;
 
 /// Runtime typed fontconfig value
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Value {
     /// `<int>0</int>`
     Int(Int),

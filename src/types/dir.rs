@@ -1,4 +1,5 @@
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Dir {
     pub prefix: DirPrefix,
     pub salt: String,
@@ -6,12 +7,14 @@ pub struct Dir {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CacheDir {
     pub prefix: DirPrefix,
     pub path: String,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Include {
     pub prefix: DirPrefix,
     pub ignore_missing: bool,
@@ -19,6 +22,7 @@ pub struct Include {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RemapDir {
     pub prefix: DirPrefix,
     pub as_path: String,
@@ -27,6 +31,7 @@ pub struct RemapDir {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum DirPrefix {
     Default,
     Cwd,

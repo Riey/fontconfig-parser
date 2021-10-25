@@ -8,6 +8,7 @@ macro_rules! define_property {
         )+
     ) => {
         #[derive(Clone, Debug, PartialEq)]
+        #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
         pub enum Property {
             $(
                 $(#[$attr])*
@@ -28,6 +29,7 @@ macro_rules! define_property {
         }
 
         #[derive(Clone, Debug, Eq, PartialEq)]
+        #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
         pub enum PropertyKind {
             $(
                 $(#[$attr])*

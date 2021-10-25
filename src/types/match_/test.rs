@@ -8,6 +8,7 @@ use crate::Property;
 /// When used in a <match target="font"> element, the target= attribute in the <test> element selects between matching the original pattern or the font.
 /// "default" selects whichever target the outer <match> element has selected.
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Test {
     pub qual: TestQual,
     pub target: TestTarget,
@@ -16,6 +17,7 @@ pub struct Test {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum TestTarget {
     Default,
     Pattern,
@@ -38,6 +40,7 @@ impl Default for TestTarget {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum TestCompare {
     Eq,
     NotEq,
@@ -68,6 +71,7 @@ impl Default for TestCompare {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum TestQual {
     Any,
     All,

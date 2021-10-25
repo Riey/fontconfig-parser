@@ -5,6 +5,7 @@ pub use self::edit::*;
 pub use self::test::*;
 
 #[derive(Clone, Debug, Default, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Match {
     pub target: MatchTarget,
     pub tests: Vec<Test>,
@@ -12,6 +13,7 @@ pub struct Match {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MatchTarget {
     Pattern,
     Font,
