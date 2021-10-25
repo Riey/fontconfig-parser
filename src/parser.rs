@@ -209,6 +209,9 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
 }
 
 fn parse_expr(node: Node) -> Result<Expression> {
+    let mut texts = node
+        .children()
+        .filter_map(|n| if n.is_element() { n.text() } else { None });
     let mut exprs = node.children().filter_map(|n| {
         if n.is_element() {
             Some(parse_expr(n))
@@ -216,6 +219,15 @@ fn parse_expr(node: Node) -> Result<Expression> {
             None
         }
     });
+
+    macro_rules! text {
+        () => {
+            match texts.next() {
+                Some(text) => text,
+                None => return Err(Error::InvalidFormat("Expect expression".into())),
+            }
+        };
+    }
 
     macro_rules! expr {
         () => {
@@ -239,6 +251,9 @@ fn parse_expr(node: Node) -> Result<Expression> {
                 expr!(),
                 expr!(),
             ])));
+        }
+        "range" => {
+            return Ok(Value::Range(text!().parse()?, text!().parse()?).into());
         }
         "name" => {
             let mut target = PropertyTarget::default();
@@ -271,8 +286,20 @@ fn parse_expr(node: Node) -> Result<Expression> {
     }
 }
 
+macro_rules! make_parse_failed_test {
+    ($name:ident, $test_fn:ident, $text:expr,) => {
+        #[should_panic]
+        #[test]
+        fn $name() {
+            let doc = XmlDocument::parse($text).expect("Parsing xml");
+            let node = doc.root_element();
+            $test_fn(node).expect("Run parse");
+        }
+    };
+}
+
 macro_rules! make_parse_test {
-    ($name:ident, $test_fn:ident, $text:expr, $value:expr) => {
+    ($name:ident, $test_fn:ident, $text:expr, $value:expr,) => {
         #[test]
         fn $name() {
             let doc = XmlDocument::parse($text).expect("Parsing xml");
@@ -285,8 +312,23 @@ macro_rules! make_parse_test {
 }
 
 make_parse_test!(
-    test_range,
+    test_parse_int,
+    parse_expr,
+    "<int>123</int>",
+    Expression::from(123),
+);
+
+make_parse_failed_test!(test_parse_invalid_int, parse_expr, "<int>123f</int>",);
+
+make_parse_test!(
+    test_parse_range,
     parse_expr,
     "<range><int>0</int><int>10</int></range>",
-    Expression::from(Value::Range(0, 10))
+    Expression::from(Value::Range(0, 10)),
+);
+
+make_parse_failed_test!(
+    test_parse_invalid_range,
+    parse_expr,
+    "<range>0<int>10</int></range>",
 );
