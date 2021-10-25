@@ -108,7 +108,7 @@ pub fn parse_document(xml_doc: &XmlDocument) -> Result<Document> {
                                 }
                             }
                         }
-                        "blank" => todo!("blank"),
+                        "blank" => {}
                         _ => {}
                     }
                 }
@@ -253,7 +253,7 @@ fn parse_expr(node: Node) -> Result<Expression> {
             return if let Ok(list_op) = name.parse() {
                 Ok(Expression::List(
                     list_op,
-                    exprs.collect::<Result<Vec<_>>>()?.into_boxed_slice(),
+                    exprs.collect::<Result<Vec<_>>>()?,
                 ))
             } else if let Ok(unary_op) = name.parse() {
                 Ok(Expression::Unary(unary_op, Box::new(expr!())))
@@ -270,3 +270,23 @@ fn parse_expr(node: Node) -> Result<Expression> {
         }
     }
 }
+
+macro_rules! make_parse_test {
+    ($name:ident, $test_fn:ident, $text:expr, $value:expr) => {
+        #[test]
+        fn $name() {
+            let doc = XmlDocument::parse($text).expect("Parsing xml");
+            let node = doc.root_element();
+            let ret = $test_fn(node).expect("Run parse");
+            let expected = $value;
+            k9::assert_equal!(expected, ret);
+        }
+    };
+}
+
+make_parse_test!(
+    test_range,
+    parse_expr,
+    "<range><int>0</int><int>10</int></range>",
+    Expression::from(Value::Range(0, 10))
+);

@@ -10,11 +10,6 @@ pub type Bool = bool;
 pub type Int = u32;
 pub type Double = f64;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct CharSet {
-    pub ints: Vec<Int>,
-}
-
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ListOp {
     Times,
@@ -85,7 +80,7 @@ pub enum Expression {
     Unary(UnaryOp, Box<Self>),
     Binary(BinaryOp, Box<[Self; 2]>),
     Ternary(TernaryOp, Box<[Self; 3]>),
-    List(ListOp, Box<[Self]>),
+    List(ListOp, Vec<Self>),
     Matrix(Box<[Self; 4]>),
 }
 
@@ -109,21 +104,34 @@ impl Default for PropertyTarget {
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum CharSetElement {
+    Int(Int),
+    Range(Int, Int),
+}
+
+pub type CharSet = Vec<CharSetElement>;
+
 /// Runtime typed fontconfig value
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
-    /// <int>0</int>
+    /// `<int>0</int>`
     Int(Int),
-    /// <double>1.5</double>
+    /// `<double>1.5</double>`
     Double(Double),
-    /// <string>str</string>
+    /// `<string>str</string>`
     String(String),
+    /// `<const>hintslight</const>`
     Constant(Constant),
-    /// <bool>false</bool>
+    /// `<bool>false</bool>`
     Bool(Bool),
+    /// This element holds the two [`Value::Int`] elements of a range representation.
     Range(Int, Int),
+    /// This element holds at least one [`Value::String`] element of a RFC-3066-style languages or more.
+    LangSet(String),
+    /// This element holds at least one [`Value::Int`] element of an Unicode code point or more.
     CharSet(CharSet),
-    /// <name target="font">pixelsize</name>
+    /// `<name target="font">pixelsize</name>`
     Property(PropertyTarget, PropertyKind),
 }
 
