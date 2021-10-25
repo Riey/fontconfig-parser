@@ -312,6 +312,13 @@ macro_rules! make_parse_test {
 }
 
 make_parse_test!(
+    test_parse_charset,
+    parse_expr,
+    "<charset><range><int>0</int><int>123</int></range></charset>",
+    Expression::from(vec![CharSetElement::Range(0, 123)]),
+);
+
+make_parse_test!(
     test_parse_int,
     parse_expr,
     "<int>123</int>",
