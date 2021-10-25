@@ -306,8 +306,8 @@ fn parse_expr(node: Node) -> Result<Expression> {
 
 macro_rules! make_parse_failed_test {
     ($name:ident, $test_fn:ident, $text:expr,) => {
-        #[should_panic]
         #[test]
+        #[should_panic]
         fn $name() {
             let doc = XmlDocument::parse($text).expect("Parsing xml");
             let node = doc.root_element();

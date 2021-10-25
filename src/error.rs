@@ -8,7 +8,6 @@ use core::str::ParseBoolError;
 #[derive(Debug)]
 pub enum Error {
     Xml(roxmltree::Error),
-    UnmatchedDocType,
     NoFontconfig,
     InvalidFormat(String),
     #[cfg(feature = "std")]
@@ -54,7 +53,6 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::Xml(e) => e.fmt(f),
-            Error::UnmatchedDocType => write!(f, "DOCTYPE is not fontconfig"),
             Error::NoFontconfig => write!(f, "Can't find fontconfig element"),
             Error::InvalidFormat(msg) => write!(f, "Config format is invalid: {}", msg),
             #[cfg(feature = "std")]
