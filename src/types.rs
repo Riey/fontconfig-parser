@@ -9,5 +9,6 @@ mod selectfont;
 mod value;
 
 pub use self::{
-    alias::*, config::*, constant::*, dir::*, document::*, match_::*, property::*, selectfont::*, value::*,
+    alias::*, config::*, constant::*, dir::*, document::*, match_::*, property::*, selectfont::*,
+    value::*,
 };

@@ -34,5 +34,4 @@ pub fn parse_document_from_str(s: &str) -> Result<Document> {
 }
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}

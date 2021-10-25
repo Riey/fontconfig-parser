@@ -1,10 +1,10 @@
 macro_rules! try_text {
-	($node:expr) => {
+    ($node:expr) => {
         match $node.text() {
             Some(t) => t,
             None => return Err(crate::Error::InvalidFormat("Can't get text".into())),
         }
-	};
+    };
 }
 
 macro_rules! parse_attrs_opt {
