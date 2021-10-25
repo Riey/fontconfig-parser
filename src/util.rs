@@ -1,3 +1,12 @@
+macro_rules! try_next {
+    ($iter:expr, $($tt:tt)*) => {
+        match $iter.next() {
+            Some(e) => e,
+            None => return Err(crate::Error::InvalidFormat(format!($($tt)*))),
+        }
+    }
+}
+
 macro_rules! try_text {
     ($node:expr) => {
         match $node.text() {

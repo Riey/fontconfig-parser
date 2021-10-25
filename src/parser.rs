@@ -220,21 +220,9 @@ fn parse_expr(node: Node) -> Result<Expression> {
         }
     });
 
-    macro_rules! text {
-        () => {
-            match texts.next() {
-                Some(text) => text,
-                None => return Err(Error::InvalidFormat("Expect expression".into())),
-            }
-        };
-    }
-
-    macro_rules! expr {
-        () => {
-            match exprs.next() {
-                Some(expr) => expr?,
-                None => return Err(Error::InvalidFormat("Expect expression".into())),
-            }
+    macro_rules! next {
+        ($iter:expr) => {
+            try_next!($iter, "Expect expression")
         };
     }
 
@@ -246,14 +234,40 @@ fn parse_expr(node: Node) -> Result<Expression> {
         "const" => return Ok(Value::Constant(try_text!(node).parse()?).into()),
         "matrix" => {
             return Ok(Expression::Matrix(Box::new([
-                expr!(),
-                expr!(),
-                expr!(),
-                expr!(),
+                next!(exprs)?,
+                next!(exprs)?,
+                next!(exprs)?,
+                next!(exprs)?,
             ])));
         }
+        "charset" => {
+            let mut charset = Vec::new();
+
+            for child in node.children() {
+                match child.tag_name().name() {
+                    "int" => charset.push(CharSetElement::Int(try_text!(child).parse()?)),
+                    "range" => {
+                        let mut terms = child.children().filter_map(|c| {
+                            if c.is_element() {
+                                c.text()
+                            } else {
+                                None
+                            }
+                        });
+
+                        charset.push(CharSetElement::Range(
+                            next!(terms).parse()?,
+                            next!(terms).parse()?,
+                        ));
+                    }
+                    _ => {}
+                }
+            }
+
+            return Ok(Value::CharSet(charset).into());
+        }
         "range" => {
-            return Ok(Value::Range(text!().parse()?, text!().parse()?).into());
+            return Ok(Value::Range(next!(texts).parse()?, next!(texts).parse()?).into());
         }
         "name" => {
             let mut target = PropertyTarget::default();
@@ -271,13 +285,16 @@ fn parse_expr(node: Node) -> Result<Expression> {
                     exprs.collect::<Result<Vec<_>>>()?,
                 ))
             } else if let Ok(unary_op) = name.parse() {
-                Ok(Expression::Unary(unary_op, Box::new(expr!())))
+                Ok(Expression::Unary(unary_op, Box::new(next!(exprs)?)))
             } else if let Ok(binary_op) = name.parse() {
-                Ok(Expression::Binary(binary_op, Box::new([expr!(), expr!()])))
+                Ok(Expression::Binary(
+                    binary_op,
+                    Box::new([next!(exprs)?, next!(exprs)?]),
+                ))
             } else if let Ok(ternary_op) = name.parse() {
                 Ok(Expression::Ternary(
                     ternary_op,
-                    Box::new([expr!(), expr!(), expr!()]),
+                    Box::new([next!(exprs)?, next!(exprs)?, next!(exprs)?]),
                 ))
             } else {
                 todo!("{:?}", name)
