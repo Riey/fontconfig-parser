@@ -52,13 +52,13 @@ pub enum BinaryOp {
 parse_enum! {
     BinaryOp,
     (Eq, "eq"),
-    (NotEq, "noteq"),
+    (NotEq, "not_eq"),
     (Less, "less"),
-    (LessEq, "lesseq"),
+    (LessEq, "less_eq"),
     (More, "more"),
-    (MoreEq, "moreeq"),
+    (MoreEq, "more_eq"),
     (Contains, "contains"),
-    (NotContains, "notcontains"),
+    (NotContains, "not_contains"),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
