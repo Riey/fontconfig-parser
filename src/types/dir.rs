@@ -23,7 +23,7 @@ pub struct Include {
 
 /// This element contains a directory name where will be mapped as the path 'as-path' in cached information. This is useful if the directory name is an alias (via a bind mount or symlink) to another directory in the system for which cached font information is likely to exist.
 
-/// 'salt' property affects to determine cache filename as same as [`Dir`] element. 
+/// 'salt' property affects to determine cache filename as same as [`Dir`] element.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RemapDir {
