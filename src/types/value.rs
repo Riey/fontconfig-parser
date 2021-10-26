@@ -29,11 +29,21 @@ parse_enum! {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum UnaryOp {
     Not,
+
+    // these operator not exists in document page but exists in dtd
+    Cecil,
+    Floor,
+    Round,
+    Trunc,
 }
 
 parse_enum! {
     UnaryOp,
     (Not, "not"),
+    (Cecil, "cecil"),
+    (Floor, "floor"),
+    (Round, "round"),
+    (Trunc, "trunc"),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
