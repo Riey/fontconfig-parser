@@ -21,6 +21,9 @@ pub struct Include {
     pub path: String,
 }
 
+/// This element contains a directory name where will be mapped as the path 'as-path' in cached information. This is useful if the directory name is an alias (via a bind mount or symlink) to another directory in the system for which cached font information is likely to exist.
+
+/// 'salt' property affects to determine cache filename as same as [`Dir`] element. 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RemapDir {
@@ -83,3 +86,4 @@ macro_rules! define_calculate_path {
 define_calculate_path!(Dir, "XDG_DATA_HOME", "~/.local/share");
 define_calculate_path!(CacheDir, "XDG_CACHE_HOME", "~/.cache");
 define_calculate_path!(Include, "XDG_CONFIG_HOME", "~/.config");
+define_calculate_path!(RemapDir, "XDG_CONFIG_HOME", "~/.config");

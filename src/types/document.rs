@@ -20,12 +20,33 @@ pub enum ConfigPart {
     ResetDirs,
 }
 
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+/// Final dir data
+pub struct DirData {
+    /// dir path
+    pub path: PathBuf,
+    /// 'salt' property affects to determine cache filename. this is useful for example when having different fonts sets on same path at container and share fonts from host on different font path.
+    pub salt: String,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+/// Final remap-dirs data
+pub struct RemapDirData {
+    /// dir path will be mapped as the path [`as-path`](Self::as_path) in cached information. This is useful if the directory name is an alias (via a bind mount or symlink) to another directory in the system for which cached font information is likely to exist.
+    pub path: PathBuf,
+    /// 'salt' property affects to determine cache filename. this is useful for example when having different fonts sets on same path at container and share fonts from host on different font path.
+    pub salt: String,
+    // remapped path
+    pub as_path: String,
+}
+
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct FontConfig {
     pub select_fonts: Vec<SelectFont>,
-    pub dirs: Vec<PathBuf>,
+    pub dirs: Vec<DirData>,
     pub cache_dirs: Vec<PathBuf>,
+    pub remap_dirs: Vec<RemapDirData>,
     pub matches: Vec<Match>,
     pub config: Config,
     pub aliases: Vec<Alias>,
@@ -44,13 +65,19 @@ impl FontConfig {
                     self.config.blanks.append(&mut c.blanks);
                 }
                 ConfigPart::Description(_) => {}
-                ConfigPart::Dir(dir) => self.dirs.push(dir.calculate_path(config_path)),
+                ConfigPart::Dir(dir) => self.dirs.push(DirData {
+                    path: dir.calculate_path(config_path),
+                    salt: dir.salt,
+                }),
                 ConfigPart::CacheDir(dir) => self.cache_dirs.push(dir.calculate_path(config_path)),
                 ConfigPart::Match(m) => self.matches.push(m),
                 ConfigPart::ResetDirs => self.dirs.clear(),
                 ConfigPart::SelectFont(s) => self.select_fonts.push(s),
-                // TODO
-                ConfigPart::RemapDir(_remap) => {}
+                ConfigPart::RemapDir(remap) => self.remap_dirs.push(RemapDirData {
+                    path: remap.calculate_path(config_path),
+                    salt: remap.salt,
+                    as_path: remap.as_path,
+                }),
                 ConfigPart::Include(dir) => {
                     let include_path = dir.calculate_path(config_path);
 
