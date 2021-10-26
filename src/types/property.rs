@@ -135,7 +135,7 @@ define_property! {
     Fontversion(Int, "fontversion"),
     /// List of layout capabilities in the font
     Capability(CompactStr, "capability"),
-    /// CompactStr name of the font format
+    /// String name of the font format
     Fontformat(CompactStr, "fontformat"),
     /// Rasterizer should synthetically embolden the font
     Embolden(Bool, "embolden"),
@@ -147,7 +147,7 @@ define_property! {
     Fontfeatures(CompactStr, "fontfeatures"),
     /// Language name to be used for the default value of familylang, stylelang, and fullnamelang
     Namelang(CompactStr, "namelang"),
-    /// CompactStr  Name of the running program
+    /// String  Name of the running program
     Prgname(CompactStr, "prgname"),
     /// Font family name in PostScript
     Postscriptname(CompactStr, "postscriptname"),

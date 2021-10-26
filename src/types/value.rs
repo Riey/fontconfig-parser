@@ -132,7 +132,7 @@ pub enum Value {
     Bool(Bool),
     /// This element holds the two [`Value::Int`] elements of a range representation.
     Range(Int, Int),
-    /// This element holds at least one [`Value::CompactStr`] element of a RFC-3066-style languages or more.
+    /// This element holds at least one [`Value::String`] element of a RFC-3066-style languages or more.
     LangSet(CompactStr),
     /// This element holds at least one [`Value::Int`] element of an Unicode code point or more.
     CharSet(CharSet),

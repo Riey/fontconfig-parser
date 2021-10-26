@@ -1,3 +1,5 @@
+#![cfg(feature = "serialize")]
+
 use std::path::PathBuf;
 
 use fontconfig_parser::*;
