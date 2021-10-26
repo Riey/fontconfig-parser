@@ -74,7 +74,10 @@ macro_rules! define_calculate_path {
                 match self.prefix {
                     DirPrefix::Default => self.path.as_str().into(),
                     DirPrefix::Cwd => std::path::Path::new(".").join(self.path.as_str()),
-                    DirPrefix::Relative => config_file_path.as_ref().join(self.path.as_str()),
+                    DirPrefix::Relative => match config_file_path.as_ref().parent() {
+                        Some(parent) => parent.join(self.path.as_str()),
+                        None => std::path::Path::new(".").join(self.path.as_str()),
+                    },
                     DirPrefix::Xdg => std::path::PathBuf::from(
                         std::env::var($xdg_env).unwrap_or_else(|_| $xdg_fallback.into()),
                     )
