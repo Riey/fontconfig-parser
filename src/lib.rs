@@ -23,6 +23,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 pub use crate::error::Error;
 pub use crate::types::*;
+pub use compact_str::CompactStr;
 
 /// Parse as raw config parts use this when you want custom handling config file
 ///

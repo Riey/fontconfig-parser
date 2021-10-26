@@ -11,7 +11,11 @@ readme = "README.md"
 categories = ["parser-implementations"]
 keywords = ["fontconfig"]
 
+[features]
+serialize = ["serde", "compact_str/serde"]
+
 [dependencies]
+compact_str = "0.1.1"
 roxmltree = "0.14.1"
 serde = { version = "1.0.130", optional = true, features = ["derive"] }
 

@@ -1,4 +1,4 @@
-use crate::{Constant, IntOrRange, PropertyKind};
+use crate::{CompactStr, Constant, IntOrRange, PropertyKind};
 
 pub type Bool = bool;
 pub type Int = u32;
@@ -125,15 +125,15 @@ pub enum Value {
     /// `<double>1.5</double>`
     Double(Double),
     /// `<string>str</string>`
-    String(String),
+    String(CompactStr),
     /// `<const>hintslight</const>`
     Constant(Constant),
     /// `<bool>false</bool>`
     Bool(Bool),
     /// This element holds the two [`Value::Int`] elements of a range representation.
     Range(Int, Int),
-    /// This element holds at least one [`Value::String`] element of a RFC-3066-style languages or more.
-    LangSet(String),
+    /// This element holds at least one [`Value::CompactStr`] element of a RFC-3066-style languages or more.
+    LangSet(CompactStr),
     /// This element holds at least one [`Value::Int`] element of an Unicode code point or more.
     CharSet(CharSet),
     /// `<name target="font">pixelsize</name>`
@@ -156,13 +156,24 @@ from_value! {
     Int,
     Bool,
     Double,
-    String,
     Constant,
     CharSet,
 }
 
 impl<'a> From<&'a str> for Value {
     fn from(s: &'a str) -> Self {
+        Value::String(s.into())
+    }
+}
+
+impl From<CompactStr> for Value {
+    fn from(s: CompactStr) -> Self {
+        Value::String(s)
+    }
+}
+
+impl From<String> for Value {
+    fn from(s: String) -> Self {
         Value::String(s.into())
     }
 }

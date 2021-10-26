@@ -1,16 +1,18 @@
+use crate::CompactStr;
+
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Dir {
     pub prefix: DirPrefix,
-    pub salt: String,
-    pub path: String,
+    pub salt: CompactStr,
+    pub path: CompactStr,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CacheDir {
     pub prefix: DirPrefix,
-    pub path: String,
+    pub path: CompactStr,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -18,7 +20,7 @@ pub struct CacheDir {
 pub struct Include {
     pub prefix: DirPrefix,
     pub ignore_missing: bool,
-    pub path: String,
+    pub path: CompactStr,
 }
 
 /// This element contains a directory name where will be mapped as the path 'as-path' in cached information. This is useful if the directory name is an alias (via a bind mount or symlink) to another directory in the system for which cached font information is likely to exist.
@@ -28,9 +30,9 @@ pub struct Include {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RemapDir {
     pub prefix: DirPrefix,
-    pub as_path: String,
-    pub salt: String,
-    pub path: String,
+    pub as_path: CompactStr,
+    pub salt: CompactStr,
+    pub path: CompactStr,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -70,13 +72,13 @@ macro_rules! define_calculate_path {
                 config_file_path: &P,
             ) -> std::path::PathBuf {
                 match self.prefix {
-                    DirPrefix::Default => self.path.clone().into(),
-                    DirPrefix::Cwd => std::path::Path::new(".").join(&self.path),
-                    DirPrefix::Relative => config_file_path.as_ref().join(&self.path),
+                    DirPrefix::Default => self.path.as_str().into(),
+                    DirPrefix::Cwd => std::path::Path::new(".").join(self.path.as_str()),
+                    DirPrefix::Relative => config_file_path.as_ref().join(self.path.as_str()),
                     DirPrefix::Xdg => std::path::PathBuf::from(
                         std::env::var($xdg_env).unwrap_or_else(|_| $xdg_fallback.into()),
                     )
-                    .join(&self.path),
+                    .join(self.path.as_str()),
                 }
             }
         }
