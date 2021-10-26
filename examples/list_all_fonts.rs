@@ -28,7 +28,7 @@ fn main() -> Result<()> {
     let mut fonts = Vec::new();
 
     for dir in config.dirs {
-        visit_dir(dir, &mut fonts).ok();
+        visit_dir(dir.path, &mut fonts).ok();
     }
 
     println!("Find all {} fonts!", fonts.len());
