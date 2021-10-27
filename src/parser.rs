@@ -195,8 +195,11 @@ fn parse_config_part(child: Node) -> Result<Option<ConfigPart>> {
                             "compare" => t.compare,
                         });
 
-                        t.value =
-                            kind.make_property(parse_expr(child.first_element_child().unwrap())?);
+                        t.value = kind.make_property(parse_expr(
+                            child
+                                .first_element_child()
+                                .ok_or_else(|| Error::InvalidFormat(format!("Empty test value")))?,
+                        )?);
 
                         m.tests.push(t);
                     }
@@ -211,8 +214,11 @@ fn parse_config_part(child: Node) -> Result<Option<ConfigPart>> {
                             "binding" => e.binding,
                         });
 
-                        e.value =
-                            kind.make_property(parse_expr(child.first_element_child().unwrap())?);
+                        e.value = kind.make_property(parse_expr(
+                            child
+                                .first_element_child()
+                                .ok_or_else(|| Error::InvalidFormat(format!("Empty edit value")))?,
+                        )?);
 
                         m.edits.push(e);
                     }
@@ -309,7 +315,10 @@ fn parse_expr(node: Node) -> Result<Expression> {
                     Box::new([next!(exprs)?, next!(exprs)?, next!(exprs)?]),
                 ))
             } else {
-                todo!("{:?}", name)
+                Err(Error::InvalidFormat(format!(
+                    "Unknown expression: {:?}",
+                    node.tag_name(),
+                )))
             };
         }
     }
