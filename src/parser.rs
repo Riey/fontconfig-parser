@@ -1,3 +1,5 @@
+#![allow(clippy::useless_format)]
+
 use crate::*;
 use roxmltree::Node;
 
@@ -105,11 +107,7 @@ fn parse_config_part(child: Node) -> Result<Option<ConfigPart>> {
                 "ignore_missing" => ignore_missing,
             });
 
-            dir.ignore_missing = match ignore_missing {
-                "yes" => true,
-                _ => false,
-            };
-
+            dir.ignore_missing = matches!(ignore_missing, "yes");
             dir.path = try_text!(child).into();
 
             ConfigPart::Include(dir)
@@ -262,31 +260,27 @@ fn parse_expr(node: Node) -> Result<Expression> {
     }
 
     match node.tag_name().name() {
-        "string" => return Ok(Value::String(try_text!(node).into()).into()),
-        "langset" => return Ok(Value::LangSet(try_text!(node).into()).into()),
-        "double" => return Ok(Value::Double(try_text!(node).parse()?).into()),
-        "int" => return Ok(Value::Int(try_text!(node).parse()?).into()),
-        "bool" => return Ok(Value::Bool(try_text!(node).parse()?).into()),
-        "const" => return Ok(Value::Constant(try_text!(node).parse()?).into()),
-        "matrix" => {
-            return Ok(Expression::Matrix(Box::new([
-                next!(exprs)?,
-                next!(exprs)?,
-                next!(exprs)?,
-                next!(exprs)?,
-            ])));
-        }
+        "string" => Ok(Value::String(try_text!(node).into()).into()),
+        "langset" => Ok(Value::LangSet(try_text!(node).into()).into()),
+        "double" => Ok(Value::Double(try_text!(node).parse()?).into()),
+        "int" => Ok(Value::Int(try_text!(node).parse()?).into()),
+        "bool" => Ok(Value::Bool(try_text!(node).parse()?).into()),
+        "const" => Ok(Value::Constant(try_text!(node).parse()?).into()),
+        "matrix" => Ok(Expression::Matrix(Box::new([
+            next!(exprs)?,
+            next!(exprs)?,
+            next!(exprs)?,
+            next!(exprs)?,
+        ]))),
         "charset" => {
             let charset = node
                 .children()
                 .filter_map(|c| parse_int_or_range(c).ok())
                 .collect();
 
-            return Ok(Value::CharSet(charset).into());
+            Ok(Value::CharSet(charset).into())
         }
-        "range" => {
-            return Ok(Value::Range(next!(texts).parse()?, next!(texts).parse()?).into());
-        }
+        "range" => Ok(Value::Range(next!(texts).parse()?, next!(texts).parse()?).into()),
         "name" => {
             let mut target = PropertyTarget::default();
             parse_attrs!(node, {
@@ -294,10 +288,10 @@ fn parse_expr(node: Node) -> Result<Expression> {
             });
             let kind = try_text!(node).parse()?;
 
-            return Ok(Value::Property(target, kind).into());
+            Ok(Value::Property(target, kind).into())
         }
         name => {
-            return if let Ok(list_op) = name.parse() {
+            if let Ok(list_op) = name.parse() {
                 Ok(Expression::List(
                     list_op,
                     exprs.collect::<Result<Vec<_>>>()?,
@@ -319,7 +313,7 @@ fn parse_expr(node: Node) -> Result<Expression> {
                     "Unknown expression: {:?}",
                     node.tag_name(),
                 )))
-            };
+            }
         }
     }
 }
