@@ -14,14 +14,7 @@ pub fn parse_config<'a>(
 
     Ok(fontconfig
         .children()
-        .filter(|c| c.is_element())
-        .filter_map(|c| {
-            if c.is_element() {
-                parse_config_part(c).transpose()
-            } else {
-                None
-            }
-        }))
+        .filter_map(|c| parse_config_part(c).transpose()))
 }
 
 fn parse_config_part(child: Node) -> Result<Option<ConfigPart>> {
@@ -227,8 +220,6 @@ fn parse_config_part(child: Node) -> Result<Option<ConfigPart>> {
             ConfigPart::Match(m)
         }
         _ => {
-            #[cfg(feature = "std")]
-            eprintln!("Ignore {:?}", child.tag_name());
             return Ok(None);
         }
     };
