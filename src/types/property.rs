@@ -1,4 +1,4 @@
-use crate::{CompactStr, Expression, Value};
+use crate::{Expression, Value};
 
 macro_rules! define_property {
     (
@@ -14,7 +14,7 @@ macro_rules! define_property {
                 $(#[$attr])*
                 $variant(Expression),
             )+
-            Dynamic(CompactStr, Expression),
+            Dynamic(String, Expression),
         }
 
         impl Property {
@@ -35,7 +35,7 @@ macro_rules! define_property {
                 $(#[$attr])*
                 $variant,
             )+
-            Dynamic(CompactStr),
+            Dynamic(String),
         }
 
         parse_enum! {
@@ -61,17 +61,17 @@ macro_rules! define_property {
 
 define_property! {
     /// Font family names
-    Family(CompactStr, "family"),
+    Family(String, "family"),
     /// Languages corresponding to each family
-    FamilyLang(CompactStr, "familylang"),
+    FamilyLang(String, "familylang"),
     /// Font style. Overrides weight and slant
-    Style(CompactStr, "style"),
+    Style(String, "style"),
     /// Languages corresponding to each style
-    StyleLang(CompactStr, "stylelang"),
+    StyleLang(String, "stylelang"),
     /// Font full names (often includes style)
-    FullName(CompactStr, "fullname"),
+    FullName(String, "fullname"),
     /// Languages corresponding to each fullname
-    FullNameLang(CompactStr, "fullnamelang"),
+    FullNameLang(String, "fullnamelang"),
 
     /// Italic, oblique or roman
     Slant(Int, "slant"),
@@ -88,7 +88,7 @@ define_property! {
     /// Proportional, dual-width, monospace or charcell
     Spacing(Int, "spacing"),
     /// Font foundry name
-    Foundry(CompactStr, "foundry"),
+    Foundry(String, "foundry"),
     /// Whether glyphs can be antialiased
     Antialias(Bool, "antialias"),
     /// Whether the rasterizer should use hinting
@@ -103,14 +103,14 @@ define_property! {
     GlobalAdvance(Bool, "globaladvance"),
 
     /// The filename holding the font
-    File(CompactStr, "file"),
+    File(String, "file"),
     /// The index of the font within the file
     Index(Int, "index"),
     // TODO:
     // /// Use the specified FreeType face object
     // Ftface(FT_Face),
     /// Which rasterizer is in use (deprecated)
-    Rasterizer(CompactStr, "rasterizer"),
+    Rasterizer(String, "rasterizer"),
     /// Whether the glyphs are outlines
     Outline(Bool, "outline"),
     /// Whether glyphs can be scaled
@@ -130,13 +130,13 @@ define_property! {
     /// Unicode chars encoded by the font
     Charset(CharSet, "charset"),
     /// List of RFC-3066-style languages this font supports
-    Lang(CompactStr, "lang"),
+    Lang(String, "lang"),
     /// Version number of the font
     Fontversion(Int, "fontversion"),
     /// List of layout capabilities in the font
-    Capability(CompactStr, "capability"),
+    Capability(String, "capability"),
     /// String name of the font format
-    Fontformat(CompactStr, "fontformat"),
+    Fontformat(String, "fontformat"),
     /// Rasterizer should synthetically embolden the font
     Embolden(Bool, "embolden"),
     /// Use the embedded bitmap instead of the outline
@@ -144,13 +144,13 @@ define_property! {
     /// Whether the style is a decorative variant
     Decorative(Bool, "decorative"),
     /// List of the feature tags in OpenType to be enabled
-    Fontfeatures(CompactStr, "fontfeatures"),
+    Fontfeatures(String, "fontfeatures"),
     /// Language name to be used for the default value of familylang, stylelang, and fullnamelang
-    Namelang(CompactStr, "namelang"),
+    Namelang(String, "namelang"),
     /// String  Name of the running program
-    Prgname(CompactStr, "prgname"),
+    Prgname(String, "prgname"),
     /// Font family name in PostScript
-    Postscriptname(CompactStr, "postscriptname"),
+    Postscriptname(String, "postscriptname"),
     /// Whether the font has hinting
     Fonthashint(Bool, "fonthashint"),
     /// Order number of the font
@@ -165,7 +165,7 @@ define_property! {
 
 impl Default for Property {
     fn default() -> Self {
-        Property::Family(Expression::Simple(Value::String(CompactStr::default())))
+        Property::Family(Expression::Simple(Value::String(String::default())))
     }
 }
 

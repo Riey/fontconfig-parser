@@ -1,18 +1,16 @@
-use crate::CompactStr;
-
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Dir {
     pub prefix: DirPrefix,
-    pub salt: CompactStr,
-    pub path: CompactStr,
+    pub salt: String,
+    pub path: String,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CacheDir {
     pub prefix: DirPrefix,
-    pub path: CompactStr,
+    pub path: String,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -20,7 +18,7 @@ pub struct CacheDir {
 pub struct Include {
     pub prefix: DirPrefix,
     pub ignore_missing: bool,
-    pub path: CompactStr,
+    pub path: String,
 }
 
 /// This element contains a directory name where will be mapped as the path 'as-path' in cached information. This is useful if the directory name is an alias (via a bind mount or symlink) to another directory in the system for which cached font information is likely to exist.
@@ -30,9 +28,9 @@ pub struct Include {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct RemapDir {
     pub prefix: DirPrefix,
-    pub as_path: CompactStr,
-    pub salt: CompactStr,
-    pub path: CompactStr,
+    pub as_path: String,
+    pub salt: String,
+    pub path: String,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

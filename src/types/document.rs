@@ -1,6 +1,5 @@
 use crate::parser::parse_config;
 use crate::*;
-use compact_str::CompactStr;
 
 use std::collections::BinaryHeap;
 use std::fs;
@@ -9,7 +8,7 @@ use std::path::{Path, PathBuf};
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ConfigPart {
-    Description(CompactStr),
+    Description(String),
     SelectFont(SelectFont),
     Dir(Dir),
     CacheDir(CacheDir),
@@ -139,7 +138,7 @@ pub struct DirData {
     /// dir path
     pub path: PathBuf,
     /// 'salt' property affects to determine cache filename. this is useful for example when having different fonts sets on same path at container and share fonts from host on different font path.
-    pub salt: CompactStr,
+    pub salt: String,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -149,7 +148,7 @@ pub struct RemapDirData {
     /// dir path will be mapped as the path [`as-path`](Self::as_path) in cached information. This is useful if the directory name is an alias (via a bind mount or symlink) to another directory in the system for which cached font information is likely to exist.
     pub path: PathBuf,
     /// 'salt' property affects to determine cache filename. this is useful for example when having different fonts sets on same path at container and share fonts from host on different font path.
-    pub salt: CompactStr,
+    pub salt: String,
     // remapped path
-    pub as_path: CompactStr,
+    pub as_path: String,
 }
