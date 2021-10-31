@@ -4,7 +4,7 @@ pub type Bool = bool;
 pub type Int = u32;
 pub type Double = f64;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ListOp {
     Times,
@@ -25,7 +25,7 @@ parse_enum! {
     (Minus, "minus"),
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum UnaryOp {
     Not,
@@ -46,7 +46,7 @@ parse_enum! {
     (Trunc, "trunc"),
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum BinaryOp {
     Eq,
@@ -71,7 +71,7 @@ parse_enum! {
     (NotContains, "not_contains"),
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum TernaryOp {
     If,
@@ -93,7 +93,7 @@ pub enum Expression {
     Matrix(Box<[Self; 4]>),
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum PropertyTarget {
     Default,
