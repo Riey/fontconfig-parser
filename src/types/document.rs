@@ -63,9 +63,11 @@ impl FontConfig {
 
                     match self.include(&include_path) {
                         Ok(_) => {}
+                        #[allow(unused_variables)]
                         Err(err) => {
                             if !dir.ignore_missing {
-                                eprintln!("Failed to load {}: {}", include_path.display(), err);
+                                #[cfg(feature = "log")]
+                                log::warn!("Failed to include {}: {}", include_path.display(), err);
                             }
                         }
                     }
@@ -99,8 +101,14 @@ impl FontConfig {
                 .collect::<BinaryHeap<_>>();
 
             for config_path in config_paths {
-                // log error?
-                self.merge_config(&config_path).ok();
+                match self.merge_config(&config_path) {
+                    Ok(_) => {}
+                    #[allow(unused_variables)]
+                    Err(err) => {
+                        #[cfg(feature = "log")]
+                        log::warn!("Failed to merge {}: {}", config_path.display(), err);
+                    }
+                }
             }
         }
 
