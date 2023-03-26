@@ -56,6 +56,22 @@ impl Default for DirPrefix {
     }
 }
 
+/// Get the location to user home directory.
+///
+/// This implementation follows `FcConfigHome` function of freedesktop.org's
+/// Fontconfig library.
+#[allow(unused_mut, clippy::let_and_return)]
+fn config_home() -> Result<String, std::env::VarError> {
+    let mut home = std::env::var("HOME");
+
+    #[cfg(target_os = "windows")]
+    {
+        home = home.or_else(|_| std::env::var("USERPROFILE"));
+    }
+
+    home
+}
+
 macro_rules! define_calculate_path {
     ($ty:ident, $xdg_env:expr, $xdg_fallback:expr) => {
         impl $ty {
@@ -69,7 +85,7 @@ macro_rules! define_calculate_path {
                 &self,
                 config_file_path: &P,
             ) -> std::path::PathBuf {
-                match self.prefix {
+                let path = match self.prefix {
                     DirPrefix::Default => self.path.as_str().into(),
                     DirPrefix::Cwd => std::path::Path::new(".").join(self.path.as_str()),
                     DirPrefix::Relative => match config_file_path.as_ref().parent() {
@@ -80,6 +96,13 @@ macro_rules! define_calculate_path {
                         std::env::var($xdg_env).unwrap_or_else(|_| $xdg_fallback.into()),
                     )
                     .join(self.path.as_str()),
+                };
+
+                if let Some(stripped_path) = path.strip_prefix("~") {
+                    let home = config_home().unwrap_or("/".to_string());
+                    std::path::Path::new(&home).join(stripped_path)
+                } else {
+                    path
                 }
             }
         }
