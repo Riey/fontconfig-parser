@@ -98,7 +98,7 @@ macro_rules! define_calculate_path {
                     .join(self.path.as_str()),
                 };
 
-                if let Some(stripped_path) = path.strip_prefix("~") {
+                if let Ok(stripped_path) = path.strip_prefix("~") {
                     let home = config_home().unwrap_or("/".to_string());
                     std::path::Path::new(&home).join(stripped_path)
                 } else {
