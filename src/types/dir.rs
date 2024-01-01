@@ -72,6 +72,16 @@ fn config_home() -> Result<String, std::env::VarError> {
     home
 }
 
+fn expand_tilde(path: &String) -> std::path::PathBuf {
+    let parsed_path = std::path::Path::new(path);
+    if let Ok(stripped_path) = parsed_path.strip_prefix("~") {
+        let home = config_home().unwrap_or("/".to_string());
+        std::path::Path::new(&home).join(stripped_path)
+    } else {
+        parsed_path.into()
+    }
+}
+
 macro_rules! define_calculate_path {
     ($ty:ident, $xdg_env:expr, $xdg_fallback:expr) => {
         impl $ty {
@@ -85,25 +95,22 @@ macro_rules! define_calculate_path {
                 &self,
                 config_file_path: &P,
             ) -> std::path::PathBuf {
+                let expanded_path = expand_tilde(&self.path);
+
                 let path = match self.prefix {
-                    DirPrefix::Default => self.path.as_str().into(),
-                    DirPrefix::Cwd => std::path::Path::new(".").join(self.path.as_str()),
+                    DirPrefix::Default => expanded_path.into(),
+                    DirPrefix::Cwd => std::path::Path::new(".").join(expanded_path),
                     DirPrefix::Relative => match config_file_path.as_ref().parent() {
-                        Some(parent) => parent.join(self.path.as_str()),
-                        None => std::path::Path::new(".").join(self.path.as_str()),
+                        Some(parent) => parent.join(expanded_path),
+                        None => std::path::Path::new(".").join(expanded_path),
                     },
                     DirPrefix::Xdg => std::path::PathBuf::from(
                         std::env::var($xdg_env).unwrap_or_else(|_| $xdg_fallback.into()),
                     )
-                    .join(self.path.as_str()),
+                    .join(expanded_path),
                 };
 
-                if let Ok(stripped_path) = path.strip_prefix("~") {
-                    let home = config_home().unwrap_or("/".to_string());
-                    std::path::Path::new(&home).join(stripped_path)
-                } else {
-                    path
-                }
+                path
             }
         }
     };
