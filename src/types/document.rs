@@ -36,14 +36,22 @@ pub struct FontConfig {
 impl FontConfig {
     pub fn merge_config<P: AsRef<Path> + ?Sized>(&mut self, config_path: &P) -> Result<()> {
         match std::fs::canonicalize(&config_path) {
-            Ok(p) => if !self.config_files.insert(std::path::PathBuf::from(p)) {
-                return Ok(());
-            },
-            Err(err) => return Err(Error::IoError(err))
+            Ok(p) => {
+                if !self.config_files.insert(std::path::PathBuf::from(p)) {
+                    return Ok(());
+                }
+            }
+            Err(err) => return Err(Error::IoError(err)),
         }
 
         let config = fs::read_to_string(config_path.as_ref())?;
-        let xml_doc = roxmltree::Document::parse(&config)?;
+        let xml_doc = roxmltree::Document::parse_with_options(
+            &config,
+            roxmltree::ParsingOptions {
+                allow_dtd: true,
+                ..Default::default()
+            },
+        )?;
 
         for part in parse_config(&xml_doc)? {
             match part? {
