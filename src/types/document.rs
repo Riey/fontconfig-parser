@@ -1,7 +1,7 @@
 use crate::parser::parse_config;
 use crate::*;
 
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -30,10 +30,18 @@ pub struct FontConfig {
     pub matches: Vec<Match>,
     pub config: Config,
     pub aliases: Vec<Alias>,
+    pub config_files: HashSet<PathBuf>,
 }
 
 impl FontConfig {
     pub fn merge_config<P: AsRef<Path> + ?Sized>(&mut self, config_path: &P) -> Result<()> {
+        match std::fs::canonicalize(&config_path) {
+            Ok(p) => if !self.config_files.insert(std::path::PathBuf::from(p)) {
+                return Ok(());
+            },
+            Err(err) => return Err(Error::IoError(err))
+        }
+
         let config = fs::read_to_string(config_path.as_ref())?;
         let xml_doc = roxmltree::Document::parse(&config)?;
 
