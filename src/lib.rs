@@ -28,7 +28,14 @@ pub use crate::types::*;
 ///
 /// Otherwise, you may want [`FontConfig::merge_config`]
 pub fn parse_config_parts(s: &str) -> Result<Vec<ConfigPart>> {
-    crate::parser::parse_config(&roxmltree::Document::parse(s)?)?.collect()
+    crate::parser::parse_config(&roxmltree::Document::parse_with_options(
+        s,
+        roxmltree::ParsingOptions {
+            allow_dtd: true,
+            ..Default::default()
+        },
+    )?)?
+    .collect()
 }
 
 #[cfg(test)]
