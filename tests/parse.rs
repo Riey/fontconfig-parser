@@ -7,15 +7,15 @@ use fontconfig_parser::*;
 fn test_single_conf(path: PathBuf) -> Result<()> {
     eprintln!("Test {}", path.display());
 
-    let yaml_path = path.parent().unwrap().join(format!(
-        "{}.yaml",
-        path.file_stem().unwrap().to_str().unwrap()
+    let json_path = path.parent().unwrap().join(format!(
+        "{}.json",
+        path.file_name().unwrap().to_str().unwrap()
     ));
 
     let parts = parse_config_parts(std::fs::read_to_string(path)?.as_str())?;
 
-    let expected = std::fs::read_to_string(yaml_path)?;
-    let actual = serde_yaml::to_string(&parts).unwrap();
+    let expected = std::fs::read_to_string(json_path)?;
+    let actual = serde_json::to_string(&parts).unwrap();
     k9::assert_equal!(expected, actual);
 
     Ok(())
