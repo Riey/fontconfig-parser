@@ -85,12 +85,12 @@ fn config_home() -> Result<String, std::env::VarError> {
 /// This is a simplified version of `FcConfigGetFilename` from the Fontconfig
 /// library.
 fn config_get_file_name(p: &std::path::PathBuf) -> std::path::PathBuf {
-    #[cfg(target_os = "windows")]
-    {
+    if cfg!(target_os = "windows") {
         // TODO: get config file path properly for Windows
         return p.clone();
+    } else {
+        std::path::Path::new("/etc/fonts").join(p)
     }
-    std::path::Path::new("/etc/fonts").join(p)
 }
 
 fn expand_tilde(path: &String) -> std::path::PathBuf {
@@ -117,7 +117,7 @@ macro_rules! define_calculate_path {
                     DirPrefix::Default => Self::DEFAULT_PREFIX_BEHAVIOR,
                     DirPrefix::Cwd => PrefixBehavior::Cwd,
                     DirPrefix::Xdg => PrefixBehavior::Xdg,
-                    DirPrefix::Relative => PrefixBehavior::Relative
+                    DirPrefix::Relative => PrefixBehavior::Relative,
                 }
             }
 
@@ -142,10 +142,8 @@ macro_rules! define_calculate_path {
                         None => std::path::Path::new(".").join(expanded_path),
                     },
                     PrefixBehavior::Xdg => {
-                        let xdg_path = std::env::var($xdg_env)
-                            .unwrap_or_else(|_|
-                                $xdg_fallback.into()
-                            );
+                        let xdg_path =
+                            std::env::var($xdg_env).unwrap_or_else(|_| $xdg_fallback.into());
                         expand_tilde(&xdg_path).join(expanded_path)
                     }
                 }
@@ -156,5 +154,15 @@ macro_rules! define_calculate_path {
 
 define_calculate_path!(Dir, "XDG_DATA_HOME", "~/.local/share", PrefixBehavior::Cwd);
 define_calculate_path!(CacheDir, "XDG_CACHE_HOME", "~/.cache", PrefixBehavior::Cwd);
-define_calculate_path!(Include, "XDG_CONFIG_HOME", "~/.config", PrefixBehavior::Config);
-define_calculate_path!(RemapDir, "XDG_CONFIG_HOME", "~/.config", PrefixBehavior::Cwd);
+define_calculate_path!(
+    Include,
+    "XDG_CONFIG_HOME",
+    "~/.config",
+    PrefixBehavior::Config
+);
+define_calculate_path!(
+    RemapDir,
+    "XDG_CONFIG_HOME",
+    "~/.config",
+    PrefixBehavior::Cwd
+);
