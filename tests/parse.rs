@@ -14,8 +14,12 @@ fn test_single_conf(path: PathBuf) -> Result<()> {
 
     let parts = parse_config_parts(std::fs::read_to_string(path)?.as_str())?;
 
-    let expected = std::fs::read_to_string(json_path)?;
-    let actual = serde_json::to_string(&parts).unwrap();
+    let expected_str = std::fs::read_to_string(json_path)?;
+    let expected: serde_json::Value = serde_json::from_str(&expected_str).unwrap();
+
+    let actual_str = serde_json::to_string(&parts).unwrap();
+    let actual: serde_json::Value = serde_json::from_str(&actual_str).unwrap();
+
     k9::assert_equal!(expected, actual);
 
     Ok(())

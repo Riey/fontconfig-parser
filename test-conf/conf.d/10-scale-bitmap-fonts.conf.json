@@ -174,7 +174,7 @@
           "value": {
             "PixelSizeFixupFactor": {
               "Simple": {
-                "Double": 1
+                "Double": 1.0
               }
             }
           }
@@ -205,7 +205,7 @@
           "value": {
             "PixelSizeFixupFactor": {
               "Simple": {
-                "Double": 1
+                "Double": 1.0
               }
             }
           }
@@ -240,12 +240,12 @@
                       },
                       {
                         "Simple": {
-                          "Double": 0
+                          "Double": 0.0
                         }
                       },
                       {
                         "Simple": {
-                          "Double": 0
+                          "Double": 0.0
                         }
                       },
                       {
