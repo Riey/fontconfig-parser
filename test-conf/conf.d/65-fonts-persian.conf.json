@@ -542,7 +542,7 @@
                     "Matrix": [
                       {
                         "Simple": {
-                          "Double": 1
+                          "Double": 1.0
                         }
                       },
                       {
@@ -552,12 +552,12 @@
                       },
                       {
                         "Simple": {
-                          "Double": 0
+                          "Double": 0.0
                         }
                       },
                       {
                         "Simple": {
-                          "Double": 1
+                          "Double": 1.0
                         }
                       }
                     ]
@@ -731,7 +731,7 @@
           "value": {
             "Size": {
               "Simple": {
-                "Double": 24
+                "Double": 24.0
               }
             }
           }
@@ -787,7 +787,7 @@
           "value": {
             "Size": {
               "Simple": {
-                "Double": 24
+                "Double": 24.0
               }
             }
           }
@@ -843,7 +843,7 @@
           "value": {
             "Size": {
               "Simple": {
-                "Double": 24
+                "Double": 24.0
               }
             }
           }

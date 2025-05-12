@@ -1,7 +1,7 @@
 use crate::parser::parse_config;
 use crate::*;
 
-use std::collections::{BinaryHeap, HashSet};
+use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -103,7 +103,7 @@ impl FontConfig {
             self.merge_config(include_path)?;
         } else if ty.is_dir() {
             let dir = std::fs::read_dir(include_path)?;
-            let config_paths = dir
+            let mut config_paths: Vec<_> = dir
                 .filter_map(|entry| {
                     let entry = entry.ok()?;
                     let ty = entry.file_type().ok()?;
@@ -114,7 +114,12 @@ impl FontConfig {
                         None
                     }
                 })
-                .collect::<BinaryHeap<_>>();
+                .collect();
+
+            // Configs MUST be sorted in lexicographic order,
+            // otherwise `ConfigPart::ResetDirs` can occur out of intended order.
+            // See https://www.freedesktop.org/software/fontconfig/fontconfig-user.html#:~:text=sorted%20in%20lexicographic%20order
+            config_paths.sort();
 
             for config_path in config_paths {
                 match self.merge_config(&config_path) {
